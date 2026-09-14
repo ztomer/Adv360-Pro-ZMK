@@ -18,7 +18,7 @@ The following keys have been remapped from the default Kinesis 360 layout
 | Tab       | CAPSLOCK (mapped to FN with Karabiner)                                                                                         |
 | Esc       | Tap once for Esc, hold for Control                                                                                             |
 | Grave (~) | Tap once for Grave, hold for HYPER                                                                                             |
-| Caps-lock | tap once for Emojis 😎, Tap twice for F12                                                                                      |
+| Caps-lock | tap once for the emoji picker, Tap twice for F12                                                                                       |
 | Left Alt  | Tap for Shift-Tab, hold for Left-Alt                                                                                           |
 | Win-key   | Tap for Tab, hold for Right-Alt                                                                                                |
 | (3) Macro | Tap once for screenshot manager, tap twice for fast screenshot                                                                 |
