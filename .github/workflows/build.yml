@@ -10,7 +10,13 @@ jobs:
     name: Build (Legacy)
     steps:
       - name: Checkout
+        # persist-credentials: false on EVERY checkout in this file: by default
+        # checkout leaves the job token in git config (http.<host>.extraheader),
+        # readable by every later step and refused by the gates_of_heck structural
+        # gate's no-credential-in-git-config check (2026-10-08).
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Get version data
         id: get_info
         run: |
@@ -67,6 +73,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Get version data
         id: get_info
         run: |
