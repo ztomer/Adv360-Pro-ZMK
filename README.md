@@ -1,11 +1,58 @@
 # Kinesis Advantage 360 Pro ZMK Config
 
+## Recommended supporting software
+
+* macOS (Tested on v15.x-v26.x)
+* [Hammerspoon](https://www.hammerspoon.org) desktop automation.
+* [ZoneTilerWM](https://github.com/ztomer/ZoneTilerWM) My own Zone/Tile attention based Window Manager (requires Hammerspoon).
+* [Karabiner Elements](https://github.com/pqrs-org/Karabiner-Elements) Use this to map CAPSLOCK to FN.
+
+## Layout
+
+The following keys have been remapped from the default Kinesis 360 layout
+
+### Default layer
+
+| Original  | Mapped to                                                                                                                      |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Tab       | CAPSLOCK (mapped to FN with Karabiner)                                                                                         |
+| Esc       | Tap once for Esc, hold for Control                                                                                             |
+| Grave (~) | Tap once for Grave, hold for HYPER                                                                                             |
+| Caps-lock | tap once for the emoji picker, Tap twice for F12                                                                                       |
+| Left Alt  | Tap for Shift-Tab, hold for Left-Alt                                                                                           |
+| Win-key   | Tap for Tab, hold for Right-Alt                                                                                                |
+| (3) Macro | Tap once for screenshot manager, tap twice for fast screenshot                                                                 |
+| (4) Macro | Tap once for Gemini, tap twice for Claude (HYPER-F1, HYPER-F2) (Map F1 and F2 to function keys in Karabiner)                  |
+| (1) Macro | Tap once for Lock-Screen, tap twice for Sleep                                                                                  |
+| (2) Macro | Tap once for Hammerspoon Vim-Expose, tap Twice for the Mac's built in Expose                                                   |
+
+### Keypad layer (kp)
+
+| Original | Mapped to    |
+| -------- | ------------ |
+| (3) Macro | Mute        |
+| (4) Macro | Play/ Pause |
+| (1) Macro | Volume Up   |
+| (2) Macro | Volume Down |
+
+### Function layer (fp)
+
+| Original  | Mapped to    |
+| --------- | ------------ |
+| (2) Macro | (            |
+| h         | )            |
+| j         | [            |
+| k         | ]            |
+| l         | {            |
+| ;         | }            |
+| '         | `            |
+
 ## Modifying the keymap
 
 [The ZMK documentation](https://zmk.dev/docs) covers both basic and advanced functionality and has a table of OS compatibility for keycodes. Please note that the RGB Underglow, Backlight and Power Management sections are not relevant to the Advantage 360 Pro's custom ZMK fork. For more information see [this note](#note)
 
-* If you would like to continue using GitHub we recommend using Nick Coutsos’s keymap editor: https://nickcoutsos.github.io/keymap-editor/.
-* If you would prefer to leave GitHub and firmware flashing behind you can perform a one-time firmware update to gain access to Clique. Get started here: https://kinesis-ergo.com/360p-clique-upgrade/.
+* If you would like to continue using GitHub we recommend using Nick Coutsos’s keymap editor: <https://nickcoutsos.github.io/keymap-editor/>.
+* If you would prefer to leave GitHub and firmware flashing behind you can perform a one-time firmware update to gain access to Clique. Get started here: <https://kinesis-ergo.com/360p-clique-upgrade/>.
 
 Certain ZMK features (e.g. combos) require knowing the exact key positions in the matrix. They can be found in both image and text format [here](assets/key-positions.md)
 
@@ -47,7 +94,9 @@ On macOS [brew](https://brew.sh) can be used to install the required components.
 brew install docker colima
 colima start
 ```
+
 > Note: On Apple Silicon (ARM based) systems you need to make sure to start colima with the correct architecture for the container being used.
+>
 > ```
 > colima start --arch x86_64
 > ```
@@ -87,7 +136,7 @@ Follow the programming instruction on page 8 of the [Quick Start Guide](https://
 1. Unplug the right side keyboard and turn it back on.
 1. Enjoy!
 
-> Note: There are also physical reset buttons on both keyboards which can be used to enter and exit the bootloader mode. Their location is described in section 2.7 on page 9 in the [User Manual](https://kinesis-ergo.com/wp-content/uploads/Advantage360-ZMK-KB360-PRO-Users-Manual-v3-10-23.pdf) and use is described in section 5.9 on page 14. 
+> Note: There are also physical reset buttons on both keyboards which can be used to enter and exit the bootloader mode. Their location is described in section 2.7 on page 9 in the [User Manual](https://kinesis-ergo.com/wp-content/uploads/Advantage360-ZMK-KB360-PRO-Users-Manual-v3-10-23.pdf) and use is described in section 5.9 on page 14.
 
 > Note: Some operating systems wont always treat the drive as ejected after the settings-reset file is flashed or may throw a spurious error, this doesn't mean that the flashing process has failed.
 
@@ -99,7 +148,7 @@ Updating from V2.0 based firmwares to V3.0 based firmwares can be a rather compl
 
 ## Versioning
 
-Starting on 11/15/2023 the Advantage 360 Pro will now automatically record the compilation date, branch and Git commit hash in a macro that can be accessed with Mod+V. This will type out the following string: YYYYMMDD-XXXX-YYYYYY, where XXXX is the first 4 characters of the Git branch and YYYYYY is the Git commit hash. In addition to this the builds compiled by GitHub actions are now timestamped and also record the commit hash in the filename. 
+Starting on 11/15/2023 the Advantage 360 Pro will now automatically record the compilation date, branch and Git commit hash in a macro that can be accessed with Mod+V. This will type out the following string: YYYYMMDD-XXXX-YYYYYY, where XXXX is the first 4 characters of the Git branch and YYYYYY is the Git commit hash. In addition to this the builds compiled by GitHub actions are now timestamped and also record the commit hash in the filename.
 
 ## N-Key Rollover
 
@@ -134,7 +183,7 @@ The changelog for both the config repo and the underlying ZMK fork that the conf
 
 ## Beta testing
 
-The Advantage 360 Pro is always getting updates and refinements. If you are willing to beta test you can follow [this guide from ZMK](https://zmk.dev/docs/features/beta-testing#testing-features) on how to change where your config repo points to. The `west.yml` file that is mentioned is located in config/. [This link](config/west.yml) can take you to the file. Typically you will only need to change the `revision: ` to match the beta branch. There is currently no beta branch available for testing.
+The Advantage 360 Pro is always getting updates and refinements. If you are willing to beta test you can follow [this guide from ZMK](https://zmk.dev/docs/features/beta-testing#testing-features) on how to change where your config repo points to. The `west.yml` file that is mentioned is located in config/. [This link](config/west.yml) can take you to the file. Typically you will only need to change the `revision:` to match the beta branch. There is currently no beta branch available for testing.
 
 Feedback on beta branches should be submitted as a GitHub issue on the base ZMK repository as opposed to this config repository.
 
@@ -150,9 +199,9 @@ Whilst the Advantage 360 Pro is compatible with base ZMK (The pull request to me
 
 Further support resources can be found on Kinesis.com:
 
-* https://kinesis-ergo.com/support/kb360pro/#firmware-updates
-* https://kinesis-ergo.com/support/kb360pro/#manuals
+* <https://kinesis-ergo.com/support/kb360pro/#firmware-updates>
+* <https://kinesis-ergo.com/support/kb360pro/#manuals>
 
 In the event of a hardware issue it may be necessary to open a support ticket directly with Kinesis as opposed to a GitHub issue in this repository.
-* https://kinesis-ergo.com/support/kb360pro/#ticket
 
+* <https://kinesis-ergo.com/support/kb360pro/#ticket>
