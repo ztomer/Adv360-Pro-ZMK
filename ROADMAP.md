@@ -104,9 +104,13 @@ Exit: P1 acceptance tests pass, and `git status -s` is clean after a goh reinsta
   `colima start --arch x86_64`. The image is multi-arch: amd64 and arm64 are on Docker Hub
   for `stable`, `3.5` and `3.5-branch`. Forcing x86 emulation is unneeded and slower.
   *Accept:* `make` succeeds on native arm64 colima, and the README says so.
-- **P1.4 Untracked install receipts (R3).** `.gitignore` does not cover
-  `.githooks/.goh-installed/`, so a goh reinstall leaves untracked files.
-  *Accept:* after `~/Projects/gates_of_heck/install.sh`, `git status -s` is empty.
+- **P1.4 Stale hooks and untracked install receipts (R3).** Every commit prints
+  "`.githooks/pre-commit is an OLDER stock hook; update it`", and the same for `pre-push`
+  (seen 2026-10-12). Reinstall with `~/Projects/gates_of_heck/install.sh`. `.gitignore`
+  does not cover `.githooks/.goh-installed/`, so the reinstall leaves untracked receipt
+  files.
+  *Accept:* the reinstall commits only the updated hooks, commits print no "OLDER stock
+  hook" warning, and afterwards `git status -s` is empty.
 
 ## Phase 2: parked, waiting on upstream
 
