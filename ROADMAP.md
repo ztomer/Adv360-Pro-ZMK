@@ -2,20 +2,24 @@
 
 The one forward-looking plan for this fork. Closed work lives in git history; this file
 keeps only what someone could pick up tomorrow. `README.md`, `UPGRADE.md` and
-`CHANGELOG.md` are upstream (Kinesis) reference docs, not plans.
+`CHANGELOG.md` are upstream (Kinesis) reference docs, not plans. The 2026-10-12 consolidation
+record is `git show 79ade96:ROADMAP.md` ("Sources consolidated"). Item ids are stable across
+rephasing: a P0.x item now sits in Phase 1.
 
-## Context (measured 2026-10-12)
+## Context (measured 2026-10-12; gate and upstream re-measured 2026-10-14)
 
-- Personal fork of `KinesisCorporation/Adv360-Pro-ZMK`, branch `V3.0`. The fork is ONE
-  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`): 0 behind, 1 ahead.
+- Personal fork of `KinesisCorporation/Adv360-Pro-ZMK`, branch `V3.0`. The fork patch is ONE
+  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-14); the four
+  commits after it are this plan, `.gatesrc` and hooks: 0 behind, 5 ahead.
 - What the fork changes: `config/adv360.keymap` (personal keymap), the README keymap
   tables, house gates (`.gatesrc`, `tools/gate.sh`, `.githooks/`), and
   `persist-credentials: false` in `.github/workflows/build.yml`. Every other file is
   upstream's.
 - Firmware builds on GitHub Actions (two jobs, Legacy and Clique) and locally via
-  `make` (Docker or Podman). The last CI run (38144250385, 2026-10-11) is green.
-- Local gate: `tools/gate.sh --full` runs the structural layer only and is green. It
-  does not build or parse the keymap (see P0.5).
+  `make` (Docker or Podman). The last CI run (38271087072, 2026-10-12, `f7a0bd6`) is green.
+- Local gate: goh 0.27.0 stock hooks (`79ade96`). `tools/gate.sh --full` runs the structural
+  layer only and is GREEN at `79ade96` (1 s). No scanner floors are set (G0.1). It does not
+  build or parse the keymap (see P0.5).
 - ZMK base: the Kinesis fork `refil/zmk` at `adv360-z3.5-2` (Zephyr 3.5).
 
 ## Rulings (standing)
@@ -30,7 +34,39 @@ keeps only what someone could pick up tomorrow. `README.md`, `UPGRADE.md` and
 - **Non-goal: Rust.** `RUSTIFICATION_ROADMAP.md` §6 (2026-09-25) lists this repo as
   "explicitly not Rust" because it is ZMK devicetree. Revisit only if the platform changes.
 
-## Phase 0: live defects and gate holes (size S-M, one session)
+## Phase 0: wire in goh 0.27.0 (size S, one short session)
+
+Goal: `tools/gate.sh --full` green at HEAD with every scanner floor set, the hooks commit
+pushed, and the runner pinned before `ubuntu-latest` moves.
+Exit: G0.1 proven both ways; `git push` passes the pre-push gate; `git status -s` empty.
+
+- **G0.1 Set the scanner floors.** The structural gate's last step prints, measured
+  2026-10-14 at `79ade96`: `[subject] 11 scanner(s) declare no floor in .gatesrc ... this run
+  read: GOH_EMOJI_MIN_FILES=57 GOH_CONFLICT_MARKERS_MIN_FILES=64 GOH_FILE_LENGTH_MIN_FILES=6
+  GOH_SECRETS_MIN_FILES=57 GOH_SHELL_LINT_MIN_FILES=4 GOH_EARLY_EXIT_PIPE_MIN_FILES=9
+  GOH_DEAD_AFTER_EXEC_MIN_FILES=9 GOH_BARE_HOOK_INDEX_MIN_FILES=9 GOH_BARE_PYTHON_MIN_FILES=6
+  GOH_CHECKOUT_CREDENTIALS_MIN_FILES=1 GOH_MD_LINKS_MIN_LINKS=102`. Paste each into `.gatesrc`
+  at its count (MD links a little under, e.g. 95, since README edits move it).
+  *Accept:* `every scanner read its declared subject` prints no `declare no floor` line; set
+  `GOH_CHECKOUT_CREDENTIALS_MIN_FILES=2` and that step goes red naming the key, floor and count
+  (it guards R2); restore, green. Size S.
+- **G0.2 The install receipts are untracked noise (R3, was P1.4).** The 2026-10-14 reinstall
+  committed only the hooks (`79ade96`, receipts dropped from it per R3) and the "OLDER stock
+  hook" warning is gone, but `.githooks/.goh-installed/` (5 receipts) shows as `??` because
+  `.gitignore` does not cover it. Add `/.githooks/.goh-installed/` to `.gitignore`. Note: goh's
+  Downstream text tells consumers to COMMIT the receipts; R3 is this repo's standing exception.
+  *Accept:* `git status -s` is empty after `install.sh .`. Size S.
+- **G0.3 Pin a named runner before 2026-10-19.** Both jobs say `runs-on: ubuntu-latest`
+  (`build.yml:7,69`); GitHub moves that label from 24.04 to 26.04 in a staged rollout
+  2026-10-19 to 2026-11-19, so two runs can land on different images. `ubuntu-26.04` is GA
+  (https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration).
+  Pin `ubuntu-26.04` (newest release; the build itself runs in the container, so the host image
+  matters only for the actions). Split out of P0.1 because it has a date.
+  *Accept:* `grep -n 'ubuntu-latest' .github/workflows` finds nothing and the CI run on that
+  commit is green for both jobs. Size S.
+- **G0.4 Push** `79ade96` and G0.1-G0.3 to `origin/V3.0`. Size S.
+
+## Phase 1: live defects and gate holes (size S-M, one session)
 
 Goal: CI has no deprecation warnings, every pin is a named release, the README describes
 the keymap that is actually flashed, and a broken keymap fails before it is pushed.
@@ -40,9 +76,7 @@ has no annotations, and the P0.5 gate has been shown to go red.
 - **P0.1 CI actions run on deprecated Node 20.** Run 38144250385 has this annotation:
   "Node.js 20 is deprecated ... actions/cache@v4, actions/checkout@v4,
   actions/upload-artifact@v4". Bump to the newest releases, measured 2026-10-12:
-  `checkout v7.0.1`, `cache v6.1.0`, `upload-artifact v7.0.2`. The workflow also says
-  `runs-on: ubuntu-latest`, a moving label that moves to Ubuntu 26 on 2026-10-19. Pin a
-  named runner image.
+  `checkout v7.0.1`, `cache v6.1.0`, `upload-artifact v7.0.2` (the runner pin moved to G0.3).
   *Accept:* `gh run view <id> -R ztomer/Adv360-Pro-ZMK` on the bump commit shows no
   "deprecated" annotation, and both jobs upload artifacts. *Risk:* the upload-artifact
   majors changed how artifacts are named and overwritten, so check that both
@@ -80,16 +114,17 @@ has no annotations, and the P0.5 gate has been shown to go red.
   comment "There is no CI behind this" is also false for this repo. Add
   `tools/repo_gates.sh` (layer 3 in `tools/gate.sh`). When `config/` changed, it builds both
   halves in the pinned image (P0.2). It must fail with a reason, never skip silently, when
-  no container engine is running. Correct the hook comment in goh's template, not locally.
+  no container engine is running. Correct the hook comment in goh's template, not locally
+  (still false in the 0.27.0 stock `pre-push:3`, re-read 2026-10-14).
   *Accept:* delete one `>` from `config/adv360.keymap`, and `tools/gate.sh --full` goes red
   naming the keymap. Restore it, and the gate goes green. *Risk:* a cold image build is
   slow (minutes), so cache the image and gate only on `config/` changes.
 
-## Phase 1: fork hygiene and drift (size S, one session; after P0.2 and P0.3)
+## Phase 2: fork hygiene and drift (size S, one session; after P0.2 and P0.3)
 
 Goal: one source of truth for the keymap, upstream drift is reported by a tool rather than
 remembered, and the build docs are true on Apple silicon.
-Exit: P1 acceptance tests pass, and `git status -s` is clean after a goh reinstall.
+Exit: P1 acceptance tests pass.
 
 - **P1.1 `config/keymap.json` is stale.** It is byte-identical to upstream (no diff over
   `97f5d73..HEAD`), while `config/adv360.keymap` is customized, so the two disagree.
@@ -104,15 +139,8 @@ Exit: P1 acceptance tests pass, and `git status -s` is clean after a goh reinsta
   `colima start --arch x86_64`. The image is multi-arch: amd64 and arm64 are on Docker Hub
   for `stable`, `3.5` and `3.5-branch`. Forcing x86 emulation is unneeded and slower.
   *Accept:* `make` succeeds on native arm64 colima, and the README says so.
-- **P1.4 Stale hooks and untracked install receipts (R3).** Every commit prints
-  "`.githooks/pre-commit is an OLDER stock hook; update it`", and the same for `pre-push`
-  (seen 2026-10-12). Reinstall with `~/Projects/gates_of_heck/install.sh`. `.gitignore`
-  does not cover `.githooks/.goh-installed/`, so the reinstall leaves untracked receipt
-  files.
-  *Accept:* the reinstall commits only the updated hooks, commits print no "OLDER stock
-  hook" warning, and afterwards `git status -s` is empty.
 
-## Phase 2: parked, waiting on upstream
+## Phase 3: parked, waiting on upstream
 
 - **P2.1 ZMK base is Zephyr 3.5.** `config/west.yml` pins `refil/zmk` `adv360-z3.5-2`.
   ZMK images exist for Zephyr 4.1 and 4.4. Moving to base ZMK would lose the 360 Pro
@@ -120,35 +148,3 @@ Exit: P1 acceptance tests pass, and `git status -s` is clean after a goh reinsta
   the cutting-edge rule, not a silent lag.
   *Trigger:* `upstream/V3.0` gets a newer adv360 branch. P1.2 detects that, then re-pin
   the image (P0.2) to match.
-
-## Sources consolidated (2026-10-12)
-
-- Plan files: none existed. This file was created. `README.md`, `UPGRADE.md` and
-  `CHANGELOG.md` are upstream reference docs and were kept.
-- Claude CLI: no transcripts, no `memory/` slug, no worktree slugs for this repo.
-- Claude desktop: no sessions for this repo.
-- opencode: 0 sessions. A `project` row `27d588f64ccfdcbc67740a5edf887ce7e939dd08` and
-  `snapshot/27d588f6…` (2026-10-11) remain. Reported to the coordinator; the plan does not
-  depend on them.
-- opencode loop dir (`.opencode/opencode-loop/`): absent from the repo.
-- Antigravity `conversation_summaries.db`: 0 rows for this repo.
-- Antigravity IDE `56eb4aa6-0d60-451f-8a51-241ab0525a65` (2026-07-23; about shrinking the
-  git store of a third-party PDF repo and adding `git_shallow_*.sh` to scripts): it mentions
-  this repo only in an `ls ~/Projects` listing. Not this project's; left alone.
-- Antigravity IDE `671b84d2-ba96-47f9-aa84-b579f99e67b6` (2026-07-23; SMB/Avahi "backups"
-  share): it mentions this repo only in a `find *.yml` listing. Not this project's (servers);
-  left alone.
-- Antigravity IDE `bb069964-ca67-401b-936b-16c9f44cd608` and its backup mirror: a
-  ZeroThunder snow-bug conversation whose DOM dump contains the repo name. Not this
-  project's; left alone.
-- Gemini CLI `~/.gemini/tmp/scripts/` (12 checkpoints): these belong to the scripts repo,
-  whose update and backup scripts list this repo. Not this project's; left alone.
-- `ROADMAP-consolidated.md` (2026-10-01): no entry for this repo.
-- `RUSTIFICATION_ROADMAP.md` §6: carried as the Non-goal above.
-- git: one local branch `V3.0` equal to `origin/V3.0`, no other worktrees, no stale branches,
-  clean tree. `7a19473` (R1) replaced the flattened fork line. That line's last tip,
-  `4739776`, survives only in this clone's reflog (`git show 4739776:README.md`) until the
-  reflog expires. Its content is the same as `7a19473` apart from the install receipts.
-- Evidence gathered for this plan: CI annotations (P0.1), Docker Hub tag and arch probe
-  (P0.2, P1.3), keymap diff against upstream (P0.3, P1.1), local Hammerspoon and ZoneWM
-  check (P0.4).
