@@ -64,7 +64,8 @@ Exit: G0.1 proven both ways; `git push` passes the pre-push gate; `git status -s
   matters only for the actions). Split out of P0.1 because it has a date.
   *Accept:* `grep -n 'ubuntu-latest' .github/workflows` finds nothing and the CI run on that
   commit is green for both jobs. Size S.
-- **G0.4 Push** `79ade96` and G0.1-G0.3 to `origin/V3.0`. Size S.
+- **G0.4 Push** G0.1-G0.3 to `origin/V3.0` (the hooks commit `79ade96` and this plan, `bbb39c1`,
+  are pushed and passed the pre-push gate). Size S.
 
 ## Phase 1: live defects and gate holes (size S-M, one session)
 
