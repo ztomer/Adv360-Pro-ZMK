@@ -9,16 +9,16 @@ rephasing: a P0.x item now sits in Phase 1.
 ## Context (measured 2026-10-12; gate and upstream re-measured 2026-10-14)
 
 - Personal fork of `KinesisCorporation/Adv360-Pro-ZMK`, branch `V3.0`. The fork patch is ONE
-  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-14); the four
-  commits after it are this plan, `.gatesrc` and hooks: 0 behind, 5 ahead.
+  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-14); the
+  commits after it are this plan, `.gatesrc`, hooks and the runner pin: 0 behind, 10 ahead.
 - What the fork changes: `config/adv360.keymap` (personal keymap), the README keymap
   tables, house gates (`.gatesrc`, `tools/gate.sh`, `.githooks/`), and
-  `persist-credentials: false` in `.github/workflows/build.yml`. Every other file is
-  upstream's.
+  `persist-credentials: false` and `runs-on: ubuntu-26.04` in `.github/workflows/build.yml`.
+  Every other file is upstream's.
 - Firmware builds on GitHub Actions (two jobs, Legacy and Clique) and locally via
-  `make` (Docker or Podman). The last CI run (38271087072, 2026-10-12, `f7a0bd6`) is green.
+  `make` (Docker or Podman). The last CI run (38573181276, 2026-10-14, `dd31797`) is green.
 - Local gate: goh 0.27.0 stock hooks (`79ade96`). `tools/gate.sh --full` runs the structural
-  layer only and is GREEN at `79ade96` (1 s). No scanner floors are set (G0.1). It does not
+  layer only and is GREEN at `dd31797` (1 s), every scanner floor set (`2f12587`). It does not
   build or parse the keymap (see P0.5).
 - ZMK base: the Kinesis fork `refil/zmk` at `adv360-z3.5-2` (Zephyr 3.5).
 
@@ -40,32 +40,15 @@ Goal: `tools/gate.sh --full` green at HEAD with every scanner floor set, the hoo
 pushed, and the runner pinned before `ubuntu-latest` moves.
 Exit: G0.1 proven both ways; `git push` passes the pre-push gate; `git status -s` empty.
 
-- **G0.1 Set the scanner floors.** The structural gate's last step prints, measured
-  2026-10-14 at `79ade96`: `[subject] 11 scanner(s) declare no floor in .gatesrc ... this run
-  read: GOH_EMOJI_MIN_FILES=57 GOH_CONFLICT_MARKERS_MIN_FILES=64 GOH_FILE_LENGTH_MIN_FILES=6
-  GOH_SECRETS_MIN_FILES=57 GOH_SHELL_LINT_MIN_FILES=4 GOH_EARLY_EXIT_PIPE_MIN_FILES=9
-  GOH_DEAD_AFTER_EXEC_MIN_FILES=9 GOH_BARE_HOOK_INDEX_MIN_FILES=9 GOH_BARE_PYTHON_MIN_FILES=6
-  GOH_CHECKOUT_CREDENTIALS_MIN_FILES=1 GOH_MD_LINKS_MIN_LINKS=102`. Paste each into `.gatesrc`
-  at its count (MD links a little under, e.g. 95, since README edits move it).
-  *Accept:* `every scanner read its declared subject` prints no `declare no floor` line; set
-  `GOH_CHECKOUT_CREDENTIALS_MIN_FILES=2` and that step goes red naming the key, floor and count
-  (it guards R2); restore, green. Size S.
+- **G0.1 Set the scanner floors.** Closed `2f12587`.
 - **G0.2 The install receipts are untracked noise (R3, was P1.4).** The 2026-10-14 reinstall
   committed only the hooks (`79ade96`, receipts dropped from it per R3) and the "OLDER stock
   hook" warning is gone, but `.githooks/.goh-installed/` (5 receipts) shows as `??` because
   `.gitignore` does not cover it. Add `/.githooks/.goh-installed/` to `.gitignore`. Note: goh's
   Downstream text tells consumers to COMMIT the receipts; R3 is this repo's standing exception.
   *Accept:* `git status -s` is empty after `install.sh .`. Size S.
-- **G0.3 Pin a named runner before 2026-10-19.** Both jobs say `runs-on: ubuntu-latest`
-  (`build.yml:7,69`); GitHub moves that label from 24.04 to 26.04 in a staged rollout
-  2026-10-19 to 2026-11-19, so two runs can land on different images. `ubuntu-26.04` is GA
-  (https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration).
-  Pin `ubuntu-26.04` (newest release; the build itself runs in the container, so the host image
-  matters only for the actions). Split out of P0.1 because it has a date.
-  *Accept:* `grep -n 'ubuntu-latest' .github/workflows` finds nothing and the CI run on that
-  commit is green for both jobs. Size S.
-- **G0.4 Push** G0.1-G0.3 to `origin/V3.0` (the hooks commit `79ade96` and this plan, `bbb39c1`,
-  are pushed and passed the pre-push gate). Size S.
+- **G0.3 Pin a named runner before 2026-10-19.** Closed `dd31797` (CI 38573181276 green).
+- **G0.4 Push** G0.1 and G0.3. Closed `dd31797`.
 
 ## Phase 1: live defects and gate holes (size S-M, one session)
 
