@@ -41,12 +41,10 @@ pushed, and the runner pinned before `ubuntu-latest` moves.
 Exit: G0.1 proven both ways; `git push` passes the pre-push gate; `git status -s` empty.
 
 - **G0.1 Set the scanner floors.** Closed `2f12587`.
-- **G0.2 The install receipts are untracked noise (R3, was P1.4).** The 2026-10-14 reinstall
-  committed only the hooks (`79ade96`, receipts dropped from it per R3) and the "OLDER stock
-  hook" warning is gone, but `.githooks/.goh-installed/` (5 receipts) shows as `??` because
-  `.gitignore` does not cover it. Add `/.githooks/.goh-installed/` to `.gitignore`. Note: goh's
-  Downstream text tells consumers to COMMIT the receipts; R3 is this repo's standing exception.
-  *Accept:* `git status -s` is empty after `install.sh .`. Size S.
+- **G0.2 The install receipts are untracked noise (R3, was P1.4).** Closed `6f1a66a`:
+  `/.githooks/.goh-installed/` is in `.gitignore`, and `git status -s` is empty after
+  `install.sh .`. goh's Downstream text tells consumers to COMMIT the receipts; R3 is this
+  repo's standing exception to that.
 - **G0.3 Pin a named runner before 2026-10-19.** Closed `dd31797` (CI 38573181276 green).
 - **G0.4 Push** G0.1 and G0.3. Closed `dd31797`.
 
