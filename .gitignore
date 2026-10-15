@@ -1,1 +1,4 @@
 /firmware/*.uf2
+
+# goh install receipts: recorded per machine, never committed here (R3).
+/.githooks/.goh-installed/
