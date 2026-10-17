@@ -9,43 +9,48 @@
 
 ## Layout
 
-The following keys have been remapped from the default Kinesis 360 layout
+The following keys have been remapped from the default Kinesis 360 layout. Each row names the
+key by its upstream legend and shows the binding now in `config/adv360.keymap`;
+`tools/check_readme_keymap.py` derives the remap list from the keymap's diff against upstream
+and fails the gate when a table drifts from it (`--list` prints that list).
 
 ### Default layer
 
-| Original  | Mapped to                                                                                                                      |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Tab       | CAPSLOCK (mapped to FN with Karabiner)                                                                                         |
-| Esc       | Tap once for Esc, hold for Control                                                                                             |
-| Grave (~) | Tap once for Grave, hold for HYPER                                                                                             |
-| Caps-lock | tap once for the emoji picker, Tap twice for F12                                                                                       |
-| Left Alt  | Tap for Shift-Tab, hold for Left-Alt                                                                                           |
-| Win-key   | Tap for Tab, hold for Right-Alt                                                                                                |
-| (3) Macro | Tap once for screenshot manager, tap twice for fast screenshot                                                                 |
-| (4) Macro | Tap once for Gemini, tap twice for Claude (HYPER-F1, HYPER-F2) (Map F1 and F2 to function keys in Karabiner)                  |
-| (1) Macro | Tap once for Lock-Screen, tap twice for Sleep                                                                                  |
-| (2) Macro | Tap once for Hammerspoon Vim-Expose, tap Twice for the Mac's built in Expose                                                   |
+| Original   | Binding           | Mapped to                                                                                                    |
+| ---------- | ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| Tab        | `&mt HYPER GRAVE` | Tap once for Grave, hold for HYPER                                                                           |
+| Esc        | `&mt LCTRL ESC`   | Tap once for Esc, hold for Control                                                                           |
+| Grave (~)  | `&kp CAPS`        | CAPSLOCK (mapped to FN with Karabiner)                                                                       |
+| Caps-lock  | `&EMJ_F12`        | Tap once for the emoji picker, tap twice for F12                                                             |
+| Left Ctrl  | `&kp LGUI`        | Left Command (GUI)                                                                                           |
+| Left Alt   | `&mt LALT BTAB`   | Tap for Shift-Tab, hold for Left-Alt                                                                         |
+| Win-key    | `&mt RALT TAB`    | Tap for Tab, hold for Right-Alt                                                                              |
+| Right Ctrl | `&kp RGUI`        | Right Command (GUI)                                                                                          |
+| (3) Macro  | `&SCRNSHT`        | Tap once for screenshot manager, tap twice for fast screenshot                                               |
+| (4) Macro  | `&G_C`            | Tap once for Gemini, tap twice for Claude (HYPER-F1, HYPER-F2) (Map F1 and F2 to function keys in Karabiner) |
+| (1) Macro  | `&LOCK_SLEEP`     | Tap once for Lock-Screen, tap twice for Sleep                                                                |
+| (2) Macro  | `&EXPOSES`        | Tap once for Hammerspoon Vim-Expose (HYPER-Minus), tap twice for the Mac's built in Expose                   |
 
 ### Keypad layer (kp)
 
-| Original | Mapped to    |
-| -------- | ------------ |
-| (3) Macro | Mute        |
-| (4) Macro | Play/ Pause |
-| (1) Macro | Volume Up   |
-| (2) Macro | Volume Down |
+| Original  | Binding         | Mapped to   |
+| --------- | --------------- | ----------- |
+| (3) Macro | `&kp C_MUTE`    | Mute        |
+| (4) Macro | `&kp C_PP`      | Play/ Pause |
+| (1) Macro | `&kp C_VOL_UP`  | Volume Up   |
+| (2) Macro | `&kp C_VOL_DN`  | Volume Down |
 
 ### Function layer (fp)
 
-| Original  | Mapped to    |
-| --------- | ------------ |
-| (2) Macro | (            |
-| h         | )            |
-| j         | [            |
-| k         | ]            |
-| l         | {            |
-| ;         | }            |
-| '         | `            |
+| Original  | Binding      | Mapped to |
+| --------- | ------------ | --------- |
+| (2) Macro | `&kp LRBKT`  | (         |
+| h         | `&kp RRBKT`  | )         |
+| j         | `&kp LBKT`   | [         |
+| k         | `&kp RBKT`   | ]         |
+| l         | `&kp LBBKT`  | {         |
+| ;         | `&kp RBBKT`  | }         |
+| '         | `&kp GRAVE`  | `` ` ``   |
 
 ## Modifying the keymap
 

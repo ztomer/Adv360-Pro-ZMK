@@ -13,3 +13,4 @@ cd "$(git rev-parse --show-toplevel)"
 
 info "repo gates"
 bash "$GOH/gates/python.sh" tools/check_image_pin.py
+bash "$GOH/gates/python.sh" tools/check_readme_keymap.py

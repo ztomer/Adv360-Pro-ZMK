@@ -60,17 +60,6 @@ has no annotations, and the P0.5 gate has been shown to go red.
   refuses a moving image tag (`:stable`, `:latest`, a bare `-branch`) in any repo. Not written
   from this repo's session because goh had another session committing on 2026-10-17.
   *Accept:* a goh structural step goes red on `image: x:stable` and green on `x:tag@sha256:...`.
-- **P0.3 The README keymap table disagrees with the keymap.** Compared with upstream
-  `97f5d73`:
-  - The **Tab** key is `&mt HYPER GRAVE`, but the README says Tab is CAPSLOCK. The README's
-    "Grave" row actually describes the Tab key's behaviour.
-  - The **Grave** key is `&kp CAPS`.
-  - The two **Ctrl** thumb keys became `LGUI`/`RGUI`, and the README does not mention it.
-  - The rows for Caps-lock, Esc, Alt/Win, the macro keys, Kp and Fn match the keymap.
-
-  *Accept:* every changed default-layer binding (diff of the `default_layer` block against
-  `97f5d73`) has exactly one README row, and every README row names the right key. Best
-  done as a small check that derives the remap list from that diff (feeds P1.2).
 - **P0.4 The documented helper software is not what runs (needs the user).** No Hammerspoon
   is installed (no `~/.hammerspoon`). The machine runs ZoneWM (Swift), not ZoneTilerWM
   (Lua/Hammerspoon), and both appear in the README's "Recommended supporting software".
