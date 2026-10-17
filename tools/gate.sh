@@ -22,8 +22,8 @@ case "${1:-}" in
     #   "$GOH/gates/rust_gate.sh"  .
     #   "$GOH/gates/py_gate.sh"    .
     #   "$GOH/gates/swift_gate.sh" .
-    # Layer 3 (genuinely local checks): the build-image pin and the
-    # README remap tables; tools/repo_gates.sh lists them.
+    # Layer 3 (genuinely local checks): the build-image pin, the README
+    # remap tables and the firmware build; tools/repo_gates.sh lists them.
     ./tools/repo_gates.sh
     ;;
 esac

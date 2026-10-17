@@ -9,17 +9,19 @@ rephasing: a P0.x item now sits in Phase 1.
 ## Context (measured 2026-10-12; gate and upstream re-measured 2026-10-14)
 
 - Personal fork of `KinesisCorporation/Adv360-Pro-ZMK`, branch `V3.0`. The fork patch is ONE
-  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-14); the
-  commits after it are this plan, `.gatesrc`, hooks and the runner pin: 0 behind, 10 ahead.
+  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-17); the
+  commits after it are this plan, gates, hooks and CI/build pins: 0 behind upstream.
 - What the fork changes: `config/adv360.keymap` (personal keymap), the README keymap
-  tables, house gates (`.gatesrc`, `tools/gate.sh`, `.githooks/`), and
-  `persist-credentials: false` and `runs-on: ubuntu-26.04` in `.github/workflows/build.yml`.
+  tables, house gates (`.gatesrc`, `tools/`, `.githooks/`), the build-image pin
+  (`Dockerfile`, `Makefile`, CI), and in `.github/workflows/build.yml`
+  `persist-credentials: false`, `runs-on: ubuntu-26.04` and actions at named releases.
   Every other file is upstream's.
 - Firmware builds on GitHub Actions (two jobs, Legacy and Clique) and locally via
   `make` (Docker or Podman). The last CI run (38573181276, 2026-10-14, `dd31797`) is green.
-- Local gate: goh 0.27.0 stock hooks (`79ade96`). `tools/gate.sh --full` runs the structural
-  layer only and is GREEN at `dd31797` (1 s), every scanner floor set (`2f12587`). It does not
-  build or parse the keymap (see P0.5).
+- Local gate: goh stock hooks, reinstalled at goh 0.29.2 on 2026-10-17. `tools/gate.sh --full`
+  runs goh's structural layer, then `tools/repo_gates.sh`: the build-image pin, the README
+  remap tables (derived from the keymap's diff against upstream), and a build of both halves
+  in the pinned image, cached by the content of `config/` (about 20 s warm on arm64 colima).
 - ZMK base: the Kinesis fork `refil/zmk` at `adv360-z3.5-2` (Zephyr 3.5).
 
 ## Rulings (standing)
@@ -68,16 +70,6 @@ has no annotations, and the P0.5 gate has been shown to go red.
   *Accept:* on the real machine, Hyper-Minus does something documented, or the key is
   rebound. The README names the software that actually serves each binding (`HYP(F1)`,
   `HYP(F2)`, `HYP(MINUS)`), and a key that does nothing is not left in place.
-- **P0.5 Gate hole: nothing local checks the keymap.** `pre-push` runs only structural
-  checks, so a keymap that does not parse is pushed and only found by GitHub CI. The hook's
-  comment "There is no CI behind this" is also false for this repo. Add
-  `tools/repo_gates.sh` (layer 3 in `tools/gate.sh`). When `config/` changed, it builds both
-  halves in the pinned image (P0.2). It must fail with a reason, never skip silently, when
-  no container engine is running. Correct the hook comment in goh's template, not locally
-  (still false in the 0.27.0 stock `pre-push:3`, re-read 2026-10-14).
-  *Accept:* delete one `>` from `config/adv360.keymap`, and `tools/gate.sh --full` goes red
-  naming the keymap. Restore it, and the gate goes green. *Risk:* a cold image build is
-  slow (minutes), so cache the image and gate only on `config/` changes.
 
 ## Phase 2: fork hygiene and drift (size S, one session; after P0.2 and P0.3)
 
