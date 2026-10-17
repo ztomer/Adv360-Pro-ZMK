@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-26.04
     container:
-      image: zmkfirmware/zmk-build-arm:stable
+      image: zmkfirmware/zmk-build-arm:3.5-branch-20250930025731-3.5.0-0.16.3-f93290b3ab1a-18117245422@sha256:840526f03c19c286b614d5cb97b11242ae19e468fc2ef2f095f6cf0465fa1c5b
     name: Build (Legacy)
     steps:
       - name: Checkout
@@ -68,7 +68,7 @@ jobs:
   build-clique:
     runs-on: ubuntu-26.04
     container:
-      image: zmkfirmware/zmk-build-arm:stable
+      image: zmkfirmware/zmk-build-arm:3.5-branch-20250930025731-3.5.0-0.16.3-f93290b3ab1a-18117245422@sha256:840526f03c19c286b614d5cb97b11242ae19e468fc2ef2f095f6cf0465fa1c5b
     name: Build (Clique)
     steps:
       - name: Checkout

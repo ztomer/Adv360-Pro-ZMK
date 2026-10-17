@@ -55,15 +55,11 @@ the keymap that is actually flashed, and a broken keymap fails before it is push
 Exit: all P0 items meet their acceptance tests, the CI run on the last commit is green and
 has no annotations, and the P0.5 gate has been shown to go red.
 
-- **P0.2 The build image is a moving tag.** `zmkfirmware/zmk-build-arm:stable` is used in
-  `Dockerfile` and in both CI jobs, which violates the house "named release, never a moving
-  tag" rule. On 2026-10-12 `stable` pointed at digest `sha256:edb1c953…`, last moved
-  2025-10-03. Pin the tag that matches the Zephyr version of the ZMK branch (`3.5-branch`,
-  digest `sha256:840526f0…`) by digest plus tag. Also fix `clean_image` in `Makefile`.
-  *Accept:* `grep -rn ':stable' Dockerfile Makefile .github` finds nothing, CI is green, and a
-  local `make` is green. *Risk:* a toolchain that does not match the branch breaks the
-  build; CI proves it. *Class:* if goh has no check for moving image tags, add one there
-  (everyone owns goh), not here.
+- **P0.2c The moving-image-tag class belongs in goh.** P0.2 pinned this repo's build image
+  (`tools/check_image_pin.py` holds the one-pin invariant locally), but goh has no step that
+  refuses a moving image tag (`:stable`, `:latest`, a bare `-branch`) in any repo. Not written
+  from this repo's session because goh had another session committing on 2026-10-17.
+  *Accept:* a goh structural step goes red on `image: x:stable` and green on `x:tag@sha256:...`.
 - **P0.3 The README keymap table disagrees with the keymap.** Compared with upstream
   `97f5d73`:
   - The **Tab** key is `&mt HYPER GRAVE`, but the README says Tab is CAPSLOCK. The README's
