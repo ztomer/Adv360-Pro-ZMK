@@ -6,7 +6,7 @@ keeps only what someone could pick up tomorrow. `README.md`, `UPGRADE.md` and
 record is `git show 79ade96:ROADMAP.md` ("Sources consolidated"). Item ids are stable across
 rephasing: a P0.x item now sits in Phase 1.
 
-## Context (measured 2026-10-12; gate and upstream re-measured 2026-10-14)
+## Context (measured 2026-10-12; gate, CI and upstream re-measured 2026-10-17)
 
 - Personal fork of `KinesisCorporation/Adv360-Pro-ZMK`, branch `V3.0`. The fork patch is ONE
   commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-17); the
@@ -17,7 +17,8 @@ rephasing: a P0.x item now sits in Phase 1.
   `persist-credentials: false`, `runs-on: ubuntu-26.04` and actions at named releases.
   Every other file is upstream's.
 - Firmware builds on GitHub Actions (two jobs, Legacy and Clique) and locally via
-  `make` (Docker or Podman). The last CI run (38573181276, 2026-10-14, `dd31797`) is green.
+  `make` (Docker or Podman). CI run 39075095960 (2026-10-17, `3e53205`) is green with no
+  annotations, and both jobs upload their artifacts.
 - Local gate: goh stock hooks, reinstalled at goh 0.29.2 on 2026-10-17. `tools/gate.sh --full`
   runs goh's structural layer, then `tools/repo_gates.sh`: the build-image pin, the README
   remap tables (derived from the keymap's diff against upstream), and a build of both halves
