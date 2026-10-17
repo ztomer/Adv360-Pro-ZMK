@@ -82,10 +82,6 @@ Exit: P1 acceptance tests pass.
   Decide (user ruling): delete it (the README's recommended editor reads `.keymap`), or
   regenerate it. Deleting widens the surface for conflicts with upstream.
   *Accept:* one source of truth, plus a check that fails if both files exist and disagree.
-- **P1.2 Upstream drift check (R1).** Add a script that fetches `upstream` and fails when
-  `git rev-list --count HEAD..upstream/V3.0` is greater than 0. It is 0 today. Wire it as
-  a warning in the gate, or run it on a schedule.
-  *Accept:* run it against an older upstream ref, and it goes red with the count.
 
 ## Phase 3: parked, waiting on upstream
 
@@ -93,5 +89,5 @@ Exit: P1 acceptance tests pass.
   ZMK images exist for Zephyr 4.1 and 4.4. Moving to base ZMK would lose the 360 Pro
   indicator LEDs (README "Note"), so this follows Kinesis. This is a stated exception to
   the cutting-edge rule, not a silent lag.
-  *Trigger:* `upstream/V3.0` gets a newer adv360 branch. P1.2 detects that, then re-pin
-  the image (P0.2) to match.
+  *Trigger:* `upstream/V3.0` gets a newer adv360 branch. `tools/check_upstream_drift.sh` (run
+  by every gate) reports it; then re-pin the build image (`Dockerfile`, both CI jobs) to match.

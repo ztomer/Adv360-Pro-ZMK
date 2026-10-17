@@ -23,7 +23,8 @@ case "${1:-}" in
     #   "$GOH/gates/py_gate.sh"    .
     #   "$GOH/gates/swift_gate.sh" .
     # Layer 3 (genuinely local checks): the build-image pin, the README
-    # remap tables and the firmware build; tools/repo_gates.sh lists them.
+    # remap tables, the firmware build and upstream drift (a warning);
+    # tools/repo_gates.sh lists them.
     ./tools/repo_gates.sh
     ;;
 esac
