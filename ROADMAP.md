@@ -55,14 +55,6 @@ the keymap that is actually flashed, and a broken keymap fails before it is push
 Exit: all P0 items meet their acceptance tests, the CI run on the last commit is green and
 has no annotations, and the P0.5 gate has been shown to go red.
 
-- **P0.1 CI actions run on deprecated Node 20.** Run 38144250385 has this annotation:
-  "Node.js 20 is deprecated ... actions/cache@v4, actions/checkout@v4,
-  actions/upload-artifact@v4". Bump to the newest releases, measured 2026-10-12:
-  `checkout v7.0.1`, `cache v6.1.0`, `upload-artifact v7.0.2` (the runner pin moved to G0.3).
-  *Accept:* `gh run view <id> -R ztomer/Adv360-Pro-ZMK` on the bump commit shows no
-  "deprecated" annotation, and both jobs upload artifacts. *Risk:* the upload-artifact
-  majors changed how artifacts are named and overwritten, so check that both
-  artifact names still appear.
 - **P0.2 The build image is a moving tag.** `zmkfirmware/zmk-build-arm:stable` is used in
   `Dockerfile` and in both CI jobs, which violates the house "named release, never a moving
   tag" rule. On 2026-10-12 `stable` pointed at digest `sha256:edb1c953…`, last moved

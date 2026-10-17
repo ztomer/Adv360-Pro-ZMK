@@ -14,7 +14,7 @@ jobs:
         # checkout leaves the job token in git config (http.<host>.extraheader),
         # readable by every later step and refused by the gates_of_heck structural
         # gate's no-credential-in-git-config check (2026-10-08).
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Get version data
@@ -27,7 +27,7 @@ jobs:
           echo "file_prefix=$file_prefix" >> $GITHUB_OUTPUT
           bin/get_version.sh $branch_name $commit
       - name: Cache west modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         env:
           cache-name: cache-zephyr-modules
         with:
@@ -59,7 +59,7 @@ jobs:
       - name: Rename zmk.uf2
         run: cp build/left/zephyr/zmk.uf2 ${{ steps.get_info.outputs.file_prefix }}-left.uf2 && cp build/right/zephyr/zmk.uf2 ${{ steps.get_info.outputs.file_prefix }}-right.uf2
       - name: Archive (Adv360)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: firmware-no-clique
           path: |
@@ -72,7 +72,7 @@ jobs:
     name: Build (Clique)
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Get version data
@@ -85,7 +85,7 @@ jobs:
           echo "file_prefix=$file_prefix" >> $GITHUB_OUTPUT
           bin/get_version.sh $branch_name $commit clique
       - name: Cache west modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         env:
           cache-name: cache-zephyr-modules
         with:
@@ -117,7 +117,7 @@ jobs:
       - name: Rename zmk.uf2
         run: cp build/left/zephyr/zmk.uf2 ${{ steps.get_info.outputs.file_prefix }}-left.uf2 && cp build/right/zephyr/zmk.uf2 ${{ steps.get_info.outputs.file_prefix }}-right.uf2
       - name: Archive (Adv360)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: firmware-clique
           path: |
