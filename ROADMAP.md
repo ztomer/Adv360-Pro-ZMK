@@ -74,7 +74,7 @@ has no annotations, and the P0.5 gate has been shown to go red.
 ## Phase 2: fork hygiene and drift (size S, one session; after P0.2 and P0.3)
 
 Goal: one source of truth for the keymap, upstream drift is reported by a tool rather than
-remembered, and the build docs are true on Apple silicon.
+remembered.
 Exit: P1 acceptance tests pass.
 
 - **P1.1 `config/keymap.json` is stale.** It is byte-identical to upstream (no diff over
@@ -86,10 +86,6 @@ Exit: P1 acceptance tests pass.
   `git rev-list --count HEAD..upstream/V3.0` is greater than 0. It is 0 today. Wire it as
   a warning in the gate, or run it on a schedule.
   *Accept:* run it against an older upstream ref, and it goes red with the count.
-- **P1.3 Apple-silicon build advice is wrong.** The README says to use
-  `colima start --arch x86_64`. The image is multi-arch: amd64 and arm64 are on Docker Hub
-  for `stable`, `3.5` and `3.5-branch`. Forcing x86 emulation is unneeded and slower.
-  *Accept:* `make` succeeds on native arm64 colima, and the README says so.
 
 ## Phase 3: parked, waiting on upstream
 

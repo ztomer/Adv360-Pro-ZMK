@@ -100,11 +100,9 @@ brew install docker colima
 colima start
 ```
 
-> Note: On Apple Silicon (ARM based) systems you need to make sure to start colima with the correct architecture for the container being used.
->
-> ```
-> colima start --arch x86_64
-> ```
+> Note: On Apple Silicon a plain `colima start` runs a native arm64 VM, and the build image
+> (`zmkfirmware/zmk-build-arm`, pinned in the `Dockerfile`) is published for both arm64 and
+> amd64, so `make` builds natively. Do not pass `--arch x86_64`: it only adds emulation.
 
 #### Ubuntu/Debian specific
 
