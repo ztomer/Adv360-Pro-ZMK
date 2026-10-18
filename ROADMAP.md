@@ -78,11 +78,11 @@ Goal: one source of truth for the keymap, upstream drift is reported by a tool r
 remembered.
 Exit: P1 acceptance tests pass.
 
-- **P1.1 `config/keymap.json` is stale.** It is byte-identical to upstream (no diff over
-  `97f5d73..HEAD`), while `config/adv360.keymap` is customized, so the two disagree.
-  Decide (user ruling): delete it (the README's recommended editor reads `.keymap`), or
-  regenerate it. Deleting widens the surface for conflicts with upstream.
-  *Accept:* one source of truth, plus a check that fails if both files exist and disagree.
+- **P1.1 CLOSED 2026-10-18 -- one keymap source.** Owner ruling: delete `config/keymap.json` (stock
+  upstream, disagreed with the customized `adv360.keymap`). `tools/check_keymap_source.py` (in
+  `repo_gates.sh`, `--probe` self-proof) goes red if the JSON returns, e.g. through an upstream
+  merge; it was red on the tree before the delete. `UPGRADE.md` is upstream's V2-to-V3 guide and
+  still names the JSON; left as is to keep the upstream diff small.
 
 ## Phase 3: parked, waiting on upstream
 
