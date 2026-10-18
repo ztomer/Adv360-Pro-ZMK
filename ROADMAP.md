@@ -58,11 +58,11 @@ the keymap that is actually flashed, and a broken keymap fails before it is push
 Exit: all P0 items meet their acceptance tests, the CI run on the last commit is green and
 has no annotations, and the P0.5 gate has been shown to go red.
 
-- **P0.2c The moving-image-tag class belongs in goh.** P0.2 pinned this repo's build image
-  (`tools/check_image_pin.py` holds the one-pin invariant locally), but goh has no step that
-  refuses a moving image tag (`:stable`, `:latest`, a bare `-branch`) in any repo. Not written
-  from this repo's session because goh had another session committing on 2026-10-17.
-  *Accept:* a goh structural step goes red on `image: x:stable` and green on `x:tag@sha256:...`.
+- **P0.2c CLOSED 2026-10-18 -- the moving-image-tag class is goh's** (goh v0.31.0 `7ba98a8`,
+  `goh moving-tags`, a structural step in every repo). Verified: `image: x:stable` exits 1,
+  `x:1.2.3@sha256:...` exits 0, and this repo reads 3 references, all pinned by digest.
+  `tools/check_image_pin.py` stays: goh covers only "no moving tag"; the digest-and-tag, single-pin
+  and Makefile-reads-the-Dockerfile rules remain local.
 - **P0.4 The documented helper software is not what runs (needs the user).** No Hammerspoon
   is installed (no `~/.hammerspoon`). The machine runs ZoneWM (Swift), not ZoneTilerWM
   (Lua/Hammerspoon), and both appear in the README's "Recommended supporting software".
