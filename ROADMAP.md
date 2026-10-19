@@ -58,9 +58,10 @@ has no annotations, and the P0.5 gate has been shown to go red.
 - **P0.4 The documented helper software is not what runs (BLOCKED on the owner).** The
   software is now named correctly and a gate keeps it named: README.md's "Host chords" table
   and `tools/check_host_software.py` (in `repo_gates.sh`, `--probe` self-proof) say that
-  ZoneWM v2 answers `HYP(MINUS)` (window hints), `HYP(F1)` (Gemini) and `HYP(F2)` (Claude);
-  Hammerspoon and the Hammerspoon-era ZoneTilerWM are gone from the README, and the keymap
-  comment above `VIMPOSE` names ZoneWM too. What no gate can do is press the key. The owner
+  ZoneWM v2 answers `HYP(MINUS)` (window hints), `HYP(F1)` (Gemini) and `HYP(F2)` (Claude).
+  Hammerspoon is no longer recommended and no row names it; the README mentions the public
+  ZoneTilerWM once, as ZoneWM's Lua/Hammerspoon predecessor, and the keymap comment above
+  `VIMPOSE` names ZoneWM too. What no gate can do is press the key. The owner
   must confirm on the machine that (2) Macro once opens ZoneWM's window hints, that (4)
   Macro once opens Gemini and twice opens Claude, and that Karabiner still maps CAPSLOCK
   to FN. If a chord does nothing, the fix is a rebind in `config/adv360.keymap`, and the
