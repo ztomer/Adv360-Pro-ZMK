@@ -30,3 +30,6 @@ GOH_MD_LINKS_MIN_LINKS=91             # read 102
 # Added 2026-10-17 (goh 0.29.2 named them undeclared), same nine-tenths rule.
 GOH_TAP_WRITES_MIN_FILES=16           # read 18
 GOH_SUBPROCESS_STDIN_MIN_CALLS=1      # read 2
+# Added 2026-10-19: the moving-tag scanner had no floor, so a scan that stopped reading the
+# image references would still pass. Same nine-tenths rule.
+GOH_MOVING_TAGS_MIN_REFS=2            # read 3
