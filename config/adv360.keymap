@@ -22,7 +22,7 @@
 // Lock the Mac
 #define MACLOCK         LG(LC(Q))
 
-// Hammerspoon keyboard navigable expose
+// ZoneWM window hints (the host software spells this HYPER + minus)
 #define VIMPOSE         HYP(MINUS)
 #define EXPOSE          LC(UP)
 

@@ -3,9 +3,10 @@
 ## Recommended supporting software
 
 * macOS (Tested on v15.x-v26.x)
-* [Hammerspoon](https://www.hammerspoon.org) desktop automation.
-* [ZoneTilerWM](https://github.com/ztomer/ZoneTilerWM) My own Zone/Tile attention based Window Manager (requires Hammerspoon).
-* [Karabiner Elements](https://github.com/pqrs-org/Karabiner-Elements) Use this to map CAPSLOCK to FN.
+* ZoneWM -- my own zone and tile window manager; it answers the host chords below. The public
+  [ZoneTilerWM](https://github.com/ztomer/ZoneTilerWM) is its Lua/Hammerspoon predecessor, and the
+  native app that runs here reads the same `~/.config/zonewm/config.toml`.
+* [Karabiner Elements](https://github.com/pqrs-org/Karabiner-Elements) Use this to map CAPSLOCK to FN, and F1/F2 to function keys.
 
 ## Layout
 
@@ -16,20 +17,20 @@ and fails the gate when a table drifts from it (`--list` prints that list).
 
 ### Default layer
 
-| Original   | Binding           | Mapped to                                                                                                    |
-| ---------- | ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| Tab        | `&mt HYPER GRAVE` | Tap once for Grave, hold for HYPER                                                                           |
-| Esc        | `&mt LCTRL ESC`   | Tap once for Esc, hold for Control                                                                           |
-| Grave (~)  | `&kp CAPS`        | CAPSLOCK (mapped to FN with Karabiner)                                                                       |
-| Caps-lock  | `&EMJ_F12`        | Tap once for the emoji picker, tap twice for F12                                                             |
-| Left Ctrl  | `&kp LGUI`        | Left Command (GUI)                                                                                           |
-| Left Alt   | `&mt LALT BTAB`   | Tap for Shift-Tab, hold for Left-Alt                                                                         |
-| Win-key    | `&mt RALT TAB`    | Tap for Tab, hold for Right-Alt                                                                              |
-| Right Ctrl | `&kp RGUI`        | Right Command (GUI)                                                                                          |
-| (3) Macro  | `&SCRNSHT`        | Tap once for screenshot manager, tap twice for fast screenshot                                               |
-| (4) Macro  | `&G_C`            | Tap once for Gemini, tap twice for Claude (HYPER-F1, HYPER-F2) (Map F1 and F2 to function keys in Karabiner) |
-| (1) Macro  | `&LOCK_SLEEP`     | Tap once for Lock-Screen, tap twice for Sleep                                                                |
-| (2) Macro  | `&EXPOSES`        | Tap once for Hammerspoon Vim-Expose (HYPER-Minus), tap twice for the Mac's built in Expose                   |
+| Original   | Binding           | Mapped to                                                                                                                                  |
+| ---------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tab        | `&mt HYPER GRAVE` | Tap once for Grave, hold for HYPER                                                                                                         |
+| Esc        | `&mt LCTRL ESC`   | Tap once for Esc, hold for Control                                                                                                         |
+| Grave (~)  | `&kp CAPS`        | CAPSLOCK (mapped to FN with Karabiner Elements)                                                                                            |
+| Caps-lock  | `&EMJ_F12`        | Tap once for the emoji picker, tap twice for F12                                                                                           |
+| Left Ctrl  | `&kp LGUI`        | Left Command (GUI)                                                                                                                         |
+| Left Alt   | `&mt LALT BTAB`   | Tap for Shift-Tab, hold for Left-Alt                                                                                                       |
+| Win-key    | `&mt RALT TAB`    | Tap for Tab, hold for Right-Alt                                                                                                            |
+| Right Ctrl | `&kp RGUI`        | Right Command (GUI)                                                                                                                        |
+| (3) Macro  | `&SCRNSHT`        | Tap once for screenshot manager, tap twice for fast screenshot                                                                             |
+| (4) Macro  | `&G_C`            | Tap once for Gemini, tap twice for Claude (`HYP(F1)`, `HYP(F2)`) -- ZoneWM app cuts (map F1 and F2 to function keys in Karabiner Elements) |
+| (1) Macro  | `&LOCK_SLEEP`     | Tap once for Lock-Screen, tap twice for Sleep                                                                                              |
+| (2) Macro  | `&EXPOSES`        | Tap once for ZoneWM window hints (`HYP(MINUS)`), tap twice for the Mac's built in Expose                                                   |
 
 ### Keypad layer (kp)
 
@@ -51,6 +52,20 @@ and fails the gate when a table drifts from it (`--list` prints that list).
 | l         | `&kp LBBKT`  | {         |
 | ;         | `&kp RBBKT`  | }         |
 | '         | `&kp GRAVE`  | `` ` ``   |
+
+## Host chords
+
+Three chords leave the board and are answered by software on the host. The Chord column is
+spelled the way `config/adv360.keymap` spells it; the Host chord column is the software's own
+spelling of the same chord (`HYPER` is Shift+Ctrl+Option+Cmd). `tools/check_host_software.py`
+derives the chord list from the keymap and fails the gate when this table, the Layout rows above
+or the recommended software list drifts from it.
+
+| Chord        | Software | Host chord     | Serves       |
+| ------------ | -------- | -------------- | ------------ |
+| `HYP(MINUS)` | ZoneWM   | `HYPER` + `-`  | window hints |
+| `HYP(F1)`    | ZoneWM   | `HYPER` + `F1` | Gemini       |
+| `HYP(F2)`    | ZoneWM   | `HYPER` + `F2` | Claude       |
 
 ## Modifying the keymap
 
