@@ -177,6 +177,41 @@ def head_date(repo, sha):
         return None
 
 
+def local_base(root):
+    """(when, sha) the local build baked, or (None, None): the newest keymap-build stamp.
+
+    The build gate writes one stamp per build it made, and the stamp carries the base the image
+    baked -- the commit `west update` fetched when the image was built. The pin is a MOVING
+    branch, so the local build's base and the head CI builds are two different facts, and the gap
+    between them is what the owner is asked to rule on.
+    """
+    common = subprocess.run(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        cwd=root, stdin=subprocess.DEVNULL, capture_output=True, text=True, check=False,
+    )
+    if common.returncode:
+        return None, None
+    stamps = os.path.join(common.stdout.strip(), "keymap-build-stamps")
+    if not os.path.isdir(stamps):
+        return None, None
+    entries = [
+        os.path.join(stamps, name)
+        for name in os.listdir(stamps)
+        if not name.endswith(".log") and not name.startswith("stage.")
+    ]
+    if not entries:
+        return None, None
+    newest = max(entries, key=os.path.getmtime)
+    try:
+        with open(newest, encoding="utf-8") as handle:
+            fields = handle.read().split()
+    except OSError:
+        return None, None
+    when = fields[0] if fields else None
+    sha = fields[1] if len(fields) > 1 else None
+    return when, sha
+
+
 def report(root):
     """Say what the pin is and how far it has moved. Warnings, never a red gate."""
     with open(os.path.join(root, WEST), encoding="utf-8") as handle:
@@ -210,6 +245,17 @@ def report(root):
         )
     else:
         warn(f"zmk base: the head is {head[:7]} ({when})")
+    built, baked = local_base(root)
+    if baked:
+        if baked == head:
+            ok(f"zmk base: the local build's base is {baked[:7]} too -- the same base CI builds")
+        else:
+            warn(
+                f"zmk base: the local build's base is {baked[:7]} (built {built}), the head CI "
+                f"builds is {head[:7]} ({when}); the local image is behind the head"
+            )
+    else:
+        warn("zmk base: the local build's base is not recorded (no keymap build stamp found)")
 
 
 def run(root):

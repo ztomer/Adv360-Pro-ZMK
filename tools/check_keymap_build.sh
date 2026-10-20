@@ -62,6 +62,16 @@ build() {
         "$IMAGE_TAG" bash -c 'mkdir -p firmware && ./build.sh' >>"$log" 2>&1
 }
 
+# The base the image actually builds from: the commit the Dockerfile's `west update` fetched when
+# the image was built. The image is the local build's copy of the base, and the pin in
+# config/west.yml is a MOVING branch -- so this is the number the gap is measured against (the
+# branch head is what CI builds). Empty when the image cannot say.
+baked_base() {
+    local docker="$1"
+    "$docker" run --rm --entrypoint git "$IMAGE_TAG" -C /app/zmk rev-parse HEAD 2>/dev/null \
+        | tr -d '[:space:]'
+}
+
 run() {
     local docker stamps key log stage
     docker="$(engine)"
@@ -79,7 +89,7 @@ run() {
     mkdir -p "$stamps"
     key="$(build_key)"
     if [ -f "$stamps/$key" ]; then
-        ok "keymap build: config/ $key already built green ($(cat "$stamps/$key"))"
+        ok "keymap build: config/ $key already built green ($(awk '{print $1}' "$stamps/$key"))"
         return 0
     fi
     log="$stamps/$key.log"
@@ -101,7 +111,9 @@ run() {
         fi
         return 1
     fi
-    date -u +"%Y-%m-%dT%H:%MZ" >"$stamps/$key"
+    # The stamp carries the base the image baked, next to the time: the pin is a moving branch,
+    # so "the local build and CI build the same base" is a fact to be read, not a thing to assume.
+    printf '%s %s\n' "$(date -u +"%Y-%m-%dT%H:%MZ")" "$(baked_base "$docker")" >"$stamps/$key"
     ok "keymap build: both halves built for config/ $key"
 }
 
@@ -119,15 +131,23 @@ probe() {
     stub="$scratch/engine"
     calls="$scratch/calls"
     # The stub answers `info` and `build`; `run` fails when the keymap holds BROKEN, naming it
-    # the way dtc does.
+    # the way dtc does, and answers the base the image baked when the gate reads it.
     cat >"$stub" <<EOF
 #!/usr/bin/env bash
-echo "\$1" >>"$calls"
 case "\$1" in
-    info|build) exit 0 ;;
-    run) if grep -q BROKEN "$scratch/config/adv360.keymap"; then
-             echo "Error: /app/config/adv360.keymap:3.1-2 syntax error"; exit 1
-         fi; exit 0 ;;
+    info|build) echo "\$1" >>"$calls"; exit 0 ;;
+    run)
+        case "\$*" in
+            *rev-parse*)
+                echo "run-base" >>"$calls"
+                echo "d93499bb877f2711989e6cbbe1feed9e9a792ca3"
+                exit 0 ;;
+        esac
+        echo "run" >>"$calls"
+        if grep -q BROKEN "$scratch/config/adv360.keymap"; then
+            echo "Error: /app/config/adv360.keymap:3.1-2 syntax error"; exit 1
+        fi; exit 0 ;;
+    *) echo "\$1" >>"$calls"; exit 0 ;;
 esac
 EOF
     chmod +x "$stub"
