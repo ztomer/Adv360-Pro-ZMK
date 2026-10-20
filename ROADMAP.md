@@ -17,8 +17,8 @@ rephasing: a P0.x item now sits in Phase 1.
   `persist-credentials: false`, `runs-on: ubuntu-26.04`, actions at named releases, and the
   `Gate proofs` job. Every other file is upstream's.
 - Firmware builds on GitHub Actions (two jobs, Legacy and Clique) and locally via `make`
-  (Docker or Podman). CI run 39335380855 (2026-10-19, `c1197ff`) is green with no
-  annotations, and both jobs upload their artifacts.
+  (Docker or Podman). CI run 39421244616 (2026-10-20, `378b07e`) is green with no
+  annotations: the two firmware jobs upload their artifacts, and the third job runs the proofs.
 - Local gate: goh 0.42.0 from `~/Projects/gates_of_heck` (`v0.32.0-18-g1f951ac`), stock
   hooks. `tools/gate.sh --full` runs goh's structural layer, then the house's
   `gates/local_ci.sh` over the step list `.gatesrc` declares (`GOH_CI_STEPS`): every gate's
