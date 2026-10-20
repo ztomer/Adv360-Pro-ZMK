@@ -7,6 +7,12 @@
 # step "gate self-proofs still pass" runs on every push; this file only sequences them. Every
 # check runs even after one goes red, so one run names every red (a broken keymap fails both the
 # README check and the build, and each says why).
+#
+# Two of the checks are about this file:
+#   check_gate_wiring.py  every gate here is named below, and a failure is not swallowed
+#   check_probe_bite.py   every gate's proof still goes red over the defect it was written for
+# A gate that is not named below would be run by nobody, and a proof that has stopped biting
+# would be green over the defect it was written for; both are checked, here, on every push.
 set -euo pipefail
 GOH="${GOH_DIR:-${GOH:-$HOME/Projects/gates_of_heck}}"
 # shellcheck source=/dev/null
@@ -15,6 +21,8 @@ cd "$(git rev-parse --show-toplevel)"
 
 info "repo gates"
 failed=()
+bash "$GOH/gates/python.sh" tools/check_gate_wiring.py || failed+=("gate wiring")
+bash "$GOH/gates/python.sh" tools/check_probe_bite.py || failed+=("probe bite")
 bash "$GOH/gates/python.sh" tools/check_image_pin.py || failed+=("image pin")
 bash "$GOH/gates/python.sh" tools/check_readme_keymap.py || failed+=("readme keymap")
 bash "$GOH/gates/python.sh" tools/check_keymap_source.py || failed+=("keymap source")

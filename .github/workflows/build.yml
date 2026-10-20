@@ -3,6 +3,38 @@ on: [push, pull_request, workflow_dispatch]
 name: Build
 
 jobs:
+  proofs:
+    runs-on: ubuntu-26.04
+    name: Gate proofs
+    steps:
+      - name: Checkout
+        # persist-credentials: false on EVERY checkout in this file: by default
+        # checkout leaves the job token in git config (http.<host>.extraheader),
+        # readable by every later step and refused by the gates_of_heck structural
+        # gate's no-credential-in-git-config check (2026-10-08).
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the shared gate harness
+        # The gate harness, at its HEAD -- the same checkout the pre-push hook
+        # delegates to, so this job runs the gate the hook runs. The thing that
+        # ships (the build image) is pinned by digest; the harness is the gate,
+        # and a gate that CI pins to a commit the hook does not run would be a
+        # CI judging the push by a gate nobody chose.
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          repository: ztomer/gates_of_heck
+          path: .gates_of_heck
+      - name: Run every gate's self-proof
+        # The proofs, in this tree: a proof is a test that is RED over the defect
+        # it was written for, and this job runs them on every push, where no
+        # --no-verify can skip them. tools/check_gate_wiring.py keeps this job
+        # in the tree: without it, a proof that stopped being run would look
+        # exactly like a proof that passes.
+        env:
+          GOH_DIR: ${{ github.workspace }}/.gates_of_heck
+        run: bash tools/run_proofs.sh
   build:
     runs-on: ubuntu-26.04
     container:

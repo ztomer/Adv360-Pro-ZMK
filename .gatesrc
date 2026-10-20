@@ -33,3 +33,23 @@ GOH_SUBPROCESS_STDIN_MIN_CALLS=1      # read 2
 # Added 2026-10-19: the moving-tag scanner had no floor, so a scan that stopped reading the
 # image references would still pass. Same nine-tenths rule.
 GOH_MOVING_TAGS_MIN_REFS=2            # read 3
+
+# The gate of record, as ONE list (ROADMAP P0.5). tools/gate.sh --full runs gates_of_heck's
+# local_ci.sh, which reads this list; the pre-push hook runs tools/gate.sh --full, and CI runs
+# the same proof runner. One list, so the hook cannot be weaker than CI and CI cannot be weaker
+# than the hook.
+#
+#   1. ./tools/run_proofs.sh          every gate's self-proof, in this tree
+#   2. ./tools/repo_gates.sh          every gate, against this tree
+#   3. the house's CI/local parity check: every repo script CI runs, the local gate runs too
+#
+# The harness path is exported because the steps below name it, and a step runs in a child shell.
+export GOH_DIR="${GOH_DIR:-$HOME/Projects/gates_of_heck}"
+GOH_CI_STEPS='./tools/run_proofs.sh:./tools/repo_gates.sh:bash "$GOH_DIR/gates/python.sh" "$GOH_DIR/checks/check_ci_local_parity.py"'
+
+# The per-step ceiling of the gate of record (gates/local_ci.sh, GOH_LCI_TIMEOUT) is the house
+# default, 900 s. The keymap build step is the one that can reach it on a cold machine -- the
+# image build plus two Zephyr builds -- so this repo doubles it rather than let a slow build be
+# killed as a hung one. Measured 2026-10-20: a cold build of both halves is about 6 minutes.
+GOH_LCI_TIMEOUT=1800
+

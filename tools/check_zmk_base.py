@@ -254,7 +254,12 @@ def _fixture(root, west, dockerfile, workflow):
 def probe():
     """Each defect in the docstring goes red alone; the clean fixture is green."""
     ref = f"zmkfirmware/zmk-build-arm:{GOOD_TAG}@{GOOD_DIGEST}"
+    other = (
+        "zmkfirmware/zmk-build-arm:4.1-branch-20251204031905-4.1.0-0.16.9-29d0ea120dcc-19916495446"
+        f"@{GOOD_DIGEST}"
+    )
     workflow = f"jobs:\n  build:\n    container:\n      image: {ref}\n"
+    other_workflow = f"jobs:\n  build:\n    container:\n      image: {other}\n"
     cases = {
         "clean": (GOOD_WEST, f"FROM {ref}\n", workflow, False),
         "no west.yml": ("", f"FROM {ref}\n", workflow, True),
@@ -262,9 +267,17 @@ def probe():
         "revision names no line": (
             GOOD_WEST.replace("adv360-z3.5-2", "main"), f"FROM {ref}\n", workflow, True
         ),
-        "image on another Zephyr line": (
+        # ONE pin, on another Zephyr line than the base: the Dockerfile and the CI job agree,
+        # and the pair is still wrong. (The case below this one is a different defect: two pins.)
+        "the image is on another Zephyr line": (
             GOOD_WEST,
-            f"FROM zmkfirmware/zmk-build-arm:4.1-branch-20251204031905-4.1.0-0.16.9-29d0ea120dcc-19916495446@{GOOD_DIGEST}\n",
+            f"FROM {other}\n",
+            other_workflow,
+            True,
+        ),
+        "two pins": (
+            GOOD_WEST,
+            f"FROM {other}\n",
             workflow,
             True,
         ),

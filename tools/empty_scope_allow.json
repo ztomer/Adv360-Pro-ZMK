@@ -1,0 +1,5 @@
+{
+  "legitimate": {
+    "check_probe_bite.py": "Its subject is the gate files THEMSELVES, and the empty-tree sweep copies the gate directory on purpose, so the gates it plants into are there and their proofs bite. It reads nothing from the tree, so there is nothing for it to lose when the tree is empty."
+  }
+}

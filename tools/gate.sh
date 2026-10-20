@@ -18,13 +18,10 @@ esac
 
 case "${1:-}" in
   --full)
-    # Add per-language layers for what this repo actually contains:
-    #   "$GOH/gates/rust_gate.sh"  .
-    #   "$GOH/gates/py_gate.sh"    .
-    #   "$GOH/gates/swift_gate.sh" .
-    # Layer 3 (genuinely local checks): the build-image pin, the README
-    # remap tables, the firmware build and upstream drift (a warning);
-    # tools/repo_gates.sh lists them.
-    ./tools/repo_gates.sh
+    # Layer 2: the steps .gatesrc declares (GOH_CI_STEPS), run by the house's local_ci.sh --
+    # the same runner the pre-push hook's gate uses, and the one CI's proof job mirrors. The
+    # list lives in ONE place (.gatesrc), so a step added here runs in CI too, and a step added
+    # ONLY in CI is what the house's CI/local parity check refuses.
+    exec "$GOH/gates/local_ci.sh" "$(git rev-parse --show-toplevel)"
     ;;
 esac
