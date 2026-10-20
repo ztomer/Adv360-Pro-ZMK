@@ -4,6 +4,8 @@ Here's all notable changes and commits to both the configuration repo and the ba
 Many thanks to all those who have submitted issues and pull requests to make this firmware better!
 ## Config repo
 
+10/20/2026 - Fork: every gate keeps a red-before/green-after proof, and CI runs the proofs on every push
+
 10/19/2026 - Fork: name the software that actually serves the host chords (ZoneWM, not Hammerspoon) and check the ZMK base pin against the build image
 
 11/7/2025 - Update README, replacing outdated layout editing information with current options [#768](https://github.com/KinesisCorporation/Adv360-Pro-ZMK/pull/768)

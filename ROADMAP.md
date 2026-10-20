@@ -6,31 +6,41 @@ keeps only what someone could pick up tomorrow. `README.md`, `UPGRADE.md` and
 record is `git show 79ade96:ROADMAP.md` ("Sources consolidated"). Item ids are stable across
 rephasing: a P0.x item now sits in Phase 1.
 
-## Context (measured 2026-10-19; gate, CI and upstream re-measured 2026-10-19)
+## Context (measured 2026-10-20; gate, CI and upstream re-measured 2026-10-20)
 
 - Personal fork of `KinesisCorporation/Adv360-Pro-ZMK`, branch `V3.0`. The fork patch is ONE
-  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-19); the
+  commit (`7a19473`) on top of `upstream/V3.0` (`97f5d73`, unmoved on 2026-10-20); the
   commits after it are this plan, gates, hooks and CI/build pins: 0 behind upstream.
 - What the fork changes: `config/adv360.keymap` (personal keymap), the README keymap and
   host-chord tables, house gates (`.gatesrc`, `tools/`, `.githooks/`), the build-image pin
   (`Dockerfile`, `Makefile`, CI), and in `.github/workflows/build.yml`
-  `persist-credentials: false`, `runs-on: ubuntu-26.04` and actions at named releases.
-  Every other file is upstream's.
+  `persist-credentials: false`, `runs-on: ubuntu-26.04`, actions at named releases, and the
+  `Gate proofs` job. Every other file is upstream's.
 - Firmware builds on GitHub Actions (two jobs, Legacy and Clique) and locally via `make`
   (Docker or Podman). CI run 39335380855 (2026-10-19, `c1197ff`) is green with no
   annotations, and both jobs upload their artifacts.
-- Local gate: goh 0.41.0 from `~/Projects/gates_of_heck` (`v0.32.0-16-g16e3119`), stock
-  hooks. `tools/gate.sh --full` runs goh's structural layer, then `tools/repo_gates.sh`: the
-  build-image pin, the README remap tables (derived from the keymap's diff against upstream),
-  the README host-chord table (derived from the keymap), the one keymap source, the ZMK base
-  pin against the build image, and a build of both halves in the pinned image, cached by the
-  content of `config/` (about 20 s warm on arm64 colima).
+- Local gate: goh 0.42.0 from `~/Projects/gates_of_heck` (`v0.32.0-18-g1f951ac`), stock
+  hooks. `tools/gate.sh --full` runs goh's structural layer, then the house's
+  `gates/local_ci.sh` over the step list `.gatesrc` declares (`GOH_CI_STEPS`): every gate's
+  self-proof (`tools/run_proofs.sh`), the repo gates (`tools/repo_gates.sh`: the build-image
+  pin, the README remap tables derived from the keymap's diff against upstream, the README
+  host-chord table, the one keymap source, the ZMK base pin against the build image, and a
+  build of both halves in the pinned image, cached by the content of `config/`), and the
+  house's CI/local parity check. The build is about 20 s warm on arm64 colima.
+- CI runs the SAME proofs on every push: the `Gate proofs` job checks the gate harness out
+  beside the repo and runs `tools/run_proofs.sh`. The fork's gate is therefore in CI, not only
+  on the maintainer's machine, and a push cannot be made with a broken proof.
+- Every gate carries a red-before/green-after proof, and `tools/check_probe_bite.py` keeps
+  them biting: it plants each gate's pre-fix defect into a COPY of the gate and requires the
+  gate's own proof to go red. `tools/check_gate_wiring.py` keeps every gate wired into the
+  sequencer, keeps a swallowed failure from passing, and keeps CI running the proofs.
 - Host software: no Hammerspoon is installed. The app that answers the keyboard's host
   chords is ZoneWM v2 (the native rewrite of the public ZoneTilerWM); it reads
   `~/.config/zonewm/config.toml`, where `HYPER` is Shift+Ctrl+Option+Cmd.
 - ZMK base: the Kinesis fork `refil/zmk` at `adv360-z3.5-2` (Zephyr 3.5), head `d93499bb`
-  (2026-08-27). The pinned image (`3.5-branch-20250930025731`) is the newest `3.5-branch`
-  image ZMK publishes.
+  (2026-08-27, unmoved since). The pinned image (`3.5-branch-20250930025731`) is the newest
+  `3.5-branch` image ZMK publishes, and it carries no ZMK copy of its own: the copy is
+  fetched by this repo's Dockerfile. See P1.3 for what that means for the two builds.
 
 ## Rulings (standing)
 
@@ -67,11 +77,6 @@ has no annotations, and the P0.5 gate has been shown to go red.
   to FN. If a chord does nothing, the fix is a rebind in `config/adv360.keymap`, and the
   README and `HOST_SOFTWARE` change with it.
   *Accept:* the owner reports what the three chords do on the real keyboard.
-- **P0.5 Every gate keeps a red-before/green-after proof that runs on every push.** The
-  house gate runs each `tools/check_*.py --probe` ("gate self-proofs still pass") and every
-  gate against an empty tree ("gates refuse to pass over an empty tree"); the host-software
-  and base-pin checks carry 15 and 8 fixtures, each defect red and the clean tree green. A
-  new check without a probe is not a check.
 
 ## Phase 2: fork hygiene and drift (size S, one session)
 
@@ -79,16 +84,49 @@ Goal: the fork's own pins are the ones the build uses, and what moves upstream i
 by a tool rather than remembered.
 Exit: P1.3 has a ruling, and the ruling is in the tree.
 
-- **P1.3 The base pin is a moving branch, so the build is not reproducible.** Measured
-  2026-10-19: `config/west.yml` pins `refil/zmk` at the BRANCH `adv360-z3.5-2`, so `west
-  update` builds whatever the branch head was when the build ran. CI builds the head
-  (`d93499bb`, 2026-08-27); a local `make` builds the copy baked into the pinned image
-  (2025-09-30) and keeps it for as long as `config/` does not change.
-  `tools/check_zmk_base.py` reports the head and the gap on every gate run, and refuses a
-  base and an image that are not the same Zephyr line.
-  *Decision needed:* pinning the revision to a commit sha makes the build reproducible and
-  costs the fork its "follows Kinesis's branch" property, because upstream's
-  `config/west.yml` pins the branch. That is the owner's ruling, not a cleanup.
+- **P1.3 The base pin is a moving branch, so the build is not reproducible.** MEASURED
+  2026-10-20, so the owner can rule in a minute:
+
+  - **What CI builds.** `west update` resolves the branch per run: `refil/zmk`
+    `adv360-z3.5-2` = `d93499bb877f2711989e6cbbe1feed9e9a792ca3`, committed 2026-08-27
+    21:46:27 +0100 ("Fallback to trans if possible"). It has not moved since (54 days).
+  - **What a local build builds.** The pinned image
+    `zmkfirmware/zmk-build-arm:3.5-branch-20250930025731` (created 2025-09-30) carries NO
+    ZMK copy of its own -- it is the Zephyr 3.5 SDK and nothing else (measured: no `/zmk` in
+    it). The copy is fetched by THIS repo's Dockerfile (`RUN west update`), so the base a
+    local build uses is the branch head as of the last image build, and the image is not
+    rebuilt until `config/` changes (the build gate caches on the content of `config/`, and
+    docker caches the `west update` layer on `config/west.yml` besides). Measured: the local
+    image `adv360-zmk-gate` (built 2026-10-17) bakes `d93499bb` -- the same commit CI
+    resolves. **So today the two builds differ by 0 commits.** The difference is the policy:
+    CI resolves the branch per run, the local image freezes it at the last build. The branch
+    moved 6 times in the last 12 months (492 commits in 2024, 37 in 2025, 6 in 2026, none
+    since 2026-08-27), so the next move is a local build that is silently behind, until
+    `config/` changes.
+  - **What a commit pin would change.** `git fetch <url> <sha>` works on GitHub (measured on
+    this branch's head), so `west update` can take a sha. The costs, all measured:
+    (a) the fork's `config/west.yml` stops being byte-identical to upstream's -- it IS
+    identical today (`git diff upstream/V3.0 -- config/west.yml` is empty) -- so the fork
+    patch gains a second hunk and every upstream sync (R1) has to re-pin;
+    (b) Kinesis re-pins the branch NAME 4 times in 3.6 years (2022-09, 2024-01, 2024-04,
+    2025-02; the current name has stood 20 months), so tracking Kinesis is about 1.1
+    re-pins a year, each costing a re-pin plus a full rebuild of both halves (the image's
+    `west update` layer is invalidated by the change: about 6 minutes measured);
+    (c) upstream ZMK fixes reach the fork only when the pin is moved, so "follows Kinesis"
+    becomes "follows Kinesis when someone moves the pin";
+    (d) today's gate REFUSES a sha pin: `tools/check_zmk_base.py` reads the Zephyr line out
+    of the revision name (`adv360-z3.5-2`), so a sha is "a revision that names no Zephyr
+    line" and the gate goes red. (The sha branch in that check's report -- "a commit pin;
+    the build is reproducible" -- is unreachable today: the check goes red before it gets
+    there.) Teaching the check to read the line from the resolved manifest is the only part
+    of the change that is code.
+  - **The tool reports it.** `tools/check_zmk_base.py` reports the head, its date, and the
+    base the local build actually baked (the build gate writes that commit into its stamp),
+    on every gate run -- so the gap is read, not remembered.
+
+  *Decision needed (the owner's ruling, not a cleanup):* pin the revision to a commit sha
+  (reproducible, and a pin to move when Kinesis re-pins), or keep the branch (follows
+  Kinesis, and a local build can be behind the head until `config/` changes).
   *Trigger:* the owner rules on it, or upstream re-pins `adv360-z3.5-2` to a commit, in
   which case follow it.
 
@@ -98,13 +136,14 @@ Exit: P1.3 has a ruling, and the ruling is in the tree.
   ZMK images exist for Zephyr 4.1 and 4.4. Moving to base ZMK would lose the 360 Pro
   indicator LEDs (README "Note"), so this follows Kinesis. This is a stated exception to
   the cutting-edge rule, not a silent lag.
-  *Measured 2026-10-19:* the trigger has NOT fired, so the base does not move today.
+  *Measured 2026-10-20:* the trigger has NOT fired, so the base does not move today.
   `refil/zmk` has no newer `adv360-z*` branch (`adv360-z3.5-2`, head `d93499bb`, is the
   newest); Kinesis's own `V3.0` (`97f5d73`, 2026-06-14) still pins `adv360-z3.5-2`; the
   pinned image is the newest `3.5-branch` image ZMK publishes (ZMK stopped publishing them
   on 2025-09-30). What changed is that the state is no longer remembered:
   `tools/check_zmk_base.py` fails if the pinned base and the build image stop being the
-  same Zephyr line, and reports the head's drift from the image on every gate run.
+  same Zephyr line, and reports the head, its date, and the base the local build baked, on
+  every gate run.
   *Trigger:* `upstream/V3.0` gets a newer adv360 branch. `tools/check_upstream_drift.sh`
   (run by every gate) reports it; then re-pin the build image (`Dockerfile`, both CI jobs)
   to match.
