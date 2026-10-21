@@ -86,7 +86,21 @@ MUTATIONS = {
             "the base and the build image are on different Zephyr lines",
             ('if parsed.group("line") != line:', "if False:"),
             ('if not parsed.group("zephyr").startswith(line + "."):', "if False:"),
-        )
+        ),
+        Mutation(
+            # The pre-fix behaviour: a commit id is a revision that names no Zephyr line, so the
+            # gate went red before it got to its own commit-pin branch (P1.3).
+            "a commit pin is refused",
+            ('    if COMMIT.match(revision):\n        return "commit", ""',
+             '    if False:\n        return "commit", ""'),
+        ),
+        Mutation(
+            # The pre-fix behaviour: the Zephyr line came from the revision's NAME, so the gate
+            # approved a pin whose resolved manifest named another line.
+            "the Zephyr line is not read from the resolved manifest",
+            ("line, error = zephyr_line(manifest, manifest_remotes(manifest), work, env)",
+             'line, error = "3.5", ""'),
+        ),
     ],
     "check_gate_wiring.py": [
         Mutation(

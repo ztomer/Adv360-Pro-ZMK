@@ -24,9 +24,11 @@ rephasing: a P0.x item now sits in Phase 1.
   `gates/local_ci.sh` over the step list `.gatesrc` declares (`GOH_CI_STEPS`): every gate's
   self-proof (`tools/run_proofs.sh`), the repo gates (`tools/repo_gates.sh`: the build-image
   pin, the README remap tables derived from the keymap's diff against upstream, the README
-  host-chord table, the one keymap source, the ZMK base pin against the build image, and a
-  build of both halves in the pinned image, cached by the content of `config/`), and the
-  house's CI/local parity check. The build is about 20 s warm on arm64 colima.
+  host-chord table, the one keymap source, the ZMK base pin against the build image -- the
+  pin's kind is resolved against the remote and named, and the Zephyr line is read from the
+  resolved manifest -- and a build of both halves in the pinned image, cached by the content
+  of `config/`), and the house's CI/local parity check. The build is about 20 s warm on arm64
+  colima.
 - CI runs the SAME proofs on every push: the `Gate proofs` job checks the gate harness out
   beside the repo and runs `tools/run_proofs.sh`. The fork's gate is therefore in CI, not only
   on the maintainer's machine, and a push cannot be made with a broken proof.
@@ -55,6 +57,31 @@ rephasing: a P0.x item now sits in Phase 1.
   `tools/check_host_software.py` (`HOST_SOFTWARE`) and named in README.md's "Host chords"
   table. The two change together, in one commit: the table is the record, the README is the
   prose about it. A chord with nothing behind it is a bug, not a configuration choice.
+- **R5 (2026-10-21, OPEN: the owner's ruling is what is missing).** The ZMK base pin is
+  either a BRANCH (`adv360-z3.5-2`, a name Kinesis moves) or a COMMIT (a sha, a pin nothing
+  can move). The gate can express both and names the kind on every run
+  (`tools/check_zmk_base.py`: the kind is what the REMOTE says, and the Zephyr line is read
+  from the RESOLVED MANIFEST -- the manifest at the resolved commit), so the ruling is the
+  only thing left. The two options, with what each costs, all measured 2026-10-20:
+
+  - **A: a commit pin** (`d93499bb877f2711989e6cbbe1feed9e9a792ca3`, today's head).
+    The build is reproducible: the base cannot move under it. The costs: the fork's
+    `config/west.yml` stops being byte-identical to upstream's (it is today), so the fork
+    patch gains a second hunk and every upstream sync (R1) has to re-pin; and the build no
+    longer follows Kinesis -- upstream ZMK fixes arrive only when someone moves the pin
+    (Kinesis re-pins the branch NAME about 1.1 times a year, each costing a re-pin plus a
+    full rebuild of both halves: the image's `west update` layer is invalidated, about
+    6 minutes measured).
+  - **B: keep the branch** (`adv360-z3.5-2`). The build follows Kinesis: every upstream fix
+    arrives on the next build, and `config/west.yml` stays byte-identical to upstream's.
+    The cost: the base can move UNDER the build. The branch moved 6 times in the last 12
+    months; CI resolves the head per run while the local image freezes it at its last build,
+    so a local build can be silently behind until `config/` changes. The gate reports the
+    head and its date, and the base the local image baked, on every run -- so the gap is
+    read, not remembered.
+
+  *Ruling needed:* A or B. The change is one line in `config/west.yml` (the `revision:`)
+  plus, for A, a rebuild of both halves; the gate needs no change either way.
 - **Non-goal: Rust.** `RUSTIFICATION_ROADMAP.md` §6 (2026-09-25) lists this repo as
   "explicitly not Rust" because it is ZMK devicetree. Revisit only if the platform changes.
 
@@ -114,19 +141,28 @@ Exit: P1.3 has a ruling, and the ruling is in the tree.
     `west update` layer is invalidated by the change: about 6 minutes measured);
     (c) upstream ZMK fixes reach the fork only when the pin is moved, so "follows Kinesis"
     becomes "follows Kinesis when someone moves the pin";
-    (d) today's gate REFUSES a sha pin: `tools/check_zmk_base.py` reads the Zephyr line out
-    of the revision name (`adv360-z3.5-2`), so a sha is "a revision that names no Zephyr
-    line" and the gate goes red. (The sha branch in that check's report -- "a commit pin;
-    the build is reproducible" -- is unreachable today: the check goes red before it gets
-    there.) Teaching the check to read the line from the resolved manifest is the only part
-    of the change that is code.
-  - **The tool reports it.** `tools/check_zmk_base.py` reports the head, its date, and the
-    base the local build actually baked (the build gate writes that commit into its stamp),
-    on every gate run -- so the gap is read, not remembered.
+    (d) the gate could not EXPRESS a sha pin (CLOSED 2026-10-21, see below): it read the
+    Zephyr line out of the revision NAME (`adv360-z3.5-2`), so a sha was "a revision that
+    names no Zephyr line" and the gate went red before its own commit-pin branch could run.
+  - **The gate can now express either pin (2026-10-21).** `tools/check_zmk_base.py` resolves
+    the pin against the remote it names: the KIND is what the remote says (a name under
+    `refs/heads` is a branch, a name under `refs/tags` is a tag, a commit id is a commit --
+    never the name alone, so a branch called `d93499bb` is a branch and a commit nobody has is
+    a pin of nothing), and the Zephyr LINE is read from the RESOLVED MANIFEST -- the manifest
+    the resolved commit carries (`app/west.yml` at that commit), not the revision's name, not a
+    working tree, not a copy of the pin. A resolution that fails is named, never a silent
+    green. The kind of pin is reported on every run.
+    *Red-before/green-after:* the gate as it was (`git show <parent>:tools/check_zmk_base.py`)
+    went RED on a commit pin -- "a revision that names no Zephyr line" -- and the gate as it
+    is now is GREEN on the same pin, and RED on a revision that names nothing at all.
+  - **The tool reports it.** `tools/check_zmk_base.py` reports the kind of pin, the head (or
+    the commit), its date, and the base the local build actually baked (the build gate writes
+    that commit into its stamp), on every gate run -- so the gap is read, not remembered.
 
   *Decision needed (the owner's ruling, not a cleanup):* pin the revision to a commit sha
   (reproducible, and a pin to move when Kinesis re-pins), or keep the branch (follows
-  Kinesis, and a local build can be behind the head until `config/` changes).
+  Kinesis, and a local build can be behind the head until `config/` changes). The options and
+  what each costs are written out in R5; the gate needs no change either way.
   *Trigger:* the owner rules on it, or upstream re-pins `adv360-z3.5-2` to a commit, in
   which case follow it.
 

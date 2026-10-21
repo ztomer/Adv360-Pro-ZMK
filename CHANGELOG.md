@@ -4,6 +4,8 @@ Here's all notable changes and commits to both the configuration repo and the ba
 Many thanks to all those who have submitted issues and pull requests to make this firmware better!
 ## Config repo
 
+10/21/2026 - Fork: the ZMK base pin gate can express a commit pin as well as a branch pin, and reads the Zephyr line from the resolved manifest
+
 10/20/2026 - Fork: every gate keeps a red-before/green-after proof, and CI runs the proofs on every push
 
 10/19/2026 - Fork: name the software that actually serves the host chords (ZoneWM, not Hammerspoon) and check the ZMK base pin against the build image
