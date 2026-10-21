@@ -235,7 +235,8 @@ def resolve(root):
     if not revision:
         return facts, [f"{WEST} pins no zmk revision"]
     if not url_base:
-        return facts, [f"{WEST} names no remote url for the zmk project"]
+        who = f"the remote '{remote}'" if remote else "its remote"
+        return facts, [f"{WEST} pins the zmk project at {who}, and the manifest gives it no url"]
     url = f"{url_base.rstrip('/')}/{PROJECT}"
     facts = {"url": url, "revision": revision}
     env = foreign_env()
@@ -373,7 +374,7 @@ def run(root):
     if found:
         return 1
     report(root, facts)
-    ok("zmk base: the pinned base and the build image are the same Zephyr line")
+    ok(f"zmk base: the pinned base is Zephyr {facts['line']} and the build image builds that line")
     return 0
 
 
