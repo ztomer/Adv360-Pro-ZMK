@@ -57,31 +57,12 @@ rephasing: a P0.x item now sits in Phase 1.
   `tools/check_host_software.py` (`HOST_SOFTWARE`) and named in README.md's "Host chords"
   table. The two change together, in one commit: the table is the record, the README is the
   prose about it. A chord with nothing behind it is a bug, not a configuration choice.
-- **R5 (2026-10-21, OPEN: the owner's ruling is what is missing).** The ZMK base pin is
+- **R5 (2026-10-21; RULED 2026-10-23: Option B, follow Kinesis).** The ZMK base pin is
   either a BRANCH (`adv360-z3.5-2`, a name Kinesis moves) or a COMMIT (a sha, a pin nothing
-  can move). The gate can express both and names the kind on every run
-  (`tools/check_zmk_base.py`: the kind is what the REMOTE says, and the Zephyr line is read
-  from the RESOLVED MANIFEST -- the manifest at the resolved commit), so the ruling is the
-  only thing left. The two options, with what each costs, all measured 2026-10-20:
-
-  - **A: a commit pin** (`d93499bb877f2711989e6cbbe1feed9e9a792ca3`, today's head).
-    The build is reproducible: the base cannot move under it. The costs: the fork's
-    `config/west.yml` stops being byte-identical to upstream's (it is today), so the fork
-    patch gains a second hunk and every upstream sync (R1) has to re-pin; and the build no
-    longer follows Kinesis -- upstream ZMK fixes arrive only when someone moves the pin
-    (Kinesis re-pins the branch NAME about 1.1 times a year, each costing a re-pin plus a
-    full rebuild of both halves: the image's `west update` layer is invalidated, about
-    6 minutes measured).
-  - **B: keep the branch** (`adv360-z3.5-2`). The build follows Kinesis: every upstream fix
-    arrives on the next build, and `config/west.yml` stays byte-identical to upstream's.
-    The cost: the base can move UNDER the build. The branch moved 6 times in the last 12
-    months; CI resolves the head per run while the local image freezes it at its last build,
-    so a local build can be silently behind until `config/` changes. The gate reports the
-    head and its date, and the base the local image baked, on every run -- so the gap is
-    read, not remembered.
-
-  *Ruling needed:* A or B. The change is one line in `config/west.yml` (the `revision:`)
-  plus, for A, a rebuild of both halves; the gate needs no change either way.
+  can move). The owner ruled Option B (2026-10-23: "follow kinesis"): keep the branch
+  (`adv360-z3.5-2`). The build follows Kinesis: every upstream fix arrives on the next build,
+  and `config/west.yml` stays byte-identical to upstream's. The gate reports the head, its date,
+  and the base the local image baked on every run (`tools/check_zmk_base.py`).
 - **Non-goal: Rust.** `RUSTIFICATION_ROADMAP.md` §6 (2026-09-25) lists this repo as
   "explicitly not Rust" because it is ZMK devicetree. Revisit only if the platform changes.
 
@@ -159,12 +140,9 @@ Exit: P1.3 has a ruling, and the ruling is in the tree.
     the commit), its date, and the base the local build actually baked (the build gate writes
     that commit into its stamp), on every gate run -- so the gap is read, not remembered.
 
-  *Decision needed (the owner's ruling, not a cleanup):* pin the revision to a commit sha
-  (reproducible, and a pin to move when Kinesis re-pins), or keep the branch (follows
-  Kinesis, and a local build can be behind the head until `config/` changes). The options and
-  what each costs are written out in R5; the gate needs no change either way.
-  *Trigger:* the owner rules on it, or upstream re-pins `adv360-z3.5-2` to a commit, in
-  which case follow it.
+  *Ruling:* Option B ruled by owner on 2026-10-23 ("follow kinesis"). Keep the branch
+  `adv360-z3.5-2` in `config/west.yml` (byte-identical to upstream); `tools/check_zmk_base.py`
+  monitors and reports the head and baked base on every gate run. CLOSED.
 
 ## Phase 3: parked, waiting on upstream
 
