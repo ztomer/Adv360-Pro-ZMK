@@ -53,3 +53,7 @@ GOH_CI_STEPS='./tools/run_proofs.sh:./tools/repo_gates.sh:bash "$GOH_DIR/gates/p
 # killed as a hung one. Measured 2026-10-20: a cold build of both halves is about 6 minutes.
 GOH_LCI_TIMEOUT=1800
 
+
+# A commit that ADDS a test names, in a `Red-run:` trailer, the mutation that
+# turned that test red (goh red-run, BACKLOG 4.11; owner OW.8, 2026-10-31).
+GOH_RED_RUN=1
