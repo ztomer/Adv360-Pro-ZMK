@@ -24,8 +24,14 @@ set -euo pipefail
 GOH="${GOH_DIR:-${GOH:-$HOME/Projects/gates_of_heck}}"
 # shellcheck source=/dev/null
 . "$GOH/tui/lib.sh"
+# A docker engine that is down is started (colima) and stopped again only if goh started it and no
+# other gate or container is on it (goh lib/container_runtime.sh, GOH.CR1); podman is left to its own.
+# shellcheck source=/dev/null
+. "$GOH/lib/container_runtime.sh"
+trap goh_container_runtime_down EXIT
 
 ROOT="$(git rev-parse --show-toplevel)"
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 IMAGE_TAG="adv360-zmk-gate"
 
 engine() {
@@ -80,9 +86,11 @@ run() {
         err "  install one (brew install docker colima), or set DOCKER; this gate never skips"
         return 1
     fi
-    if ! "$docker" info >/dev/null 2>&1; then
+    if [ "${docker##*/}" = docker ]; then
+        DOCKER="$docker" goh_container_runtime_up "adv360 keymap build" || return 1
+    elif ! "$docker" info >/dev/null 2>&1; then
         err "keymap build: $docker is installed but its engine is not running"
-        err "  start it (colima start), then re-run; this gate never skips"
+        err "  start it, then re-run; this gate never skips"
         return 1
     fi
     stamps="${KEYMAP_BUILD_STAMPS:-$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)/keymap-build-stamps}"
@@ -179,11 +187,28 @@ EOF
             *) err "keymap build probe: the red did not name the keymap: $out"; failed=1 ;;
         esac
         expect "broken keymap stays red" 1 run
+        # A docker engine that is down is started and stopped again (the whole gate, so its EXIT
+        # trap runs): the stub answers `info` only once the colima stub has brought it up.
+        mkdir -p "$scratch/d"
+        cat >"$scratch/d/docker" <<EOF
+#!/usr/bin/env bash
+case "\$1" in
+    info) [ -f "$scratch/up" ] || exit 1; echo info >>"$calls"; exit 0 ;;
+    *) exec "$stub" "\$@" ;;
+esac
+EOF
+        printf '#!/usr/bin/env bash\necho "colima $1" >>"%s"\ncase "$1" in start) : >"%s/up" ;; stop) rm -f "%s/up" ;; esac\n' \
+            "$calls" "$scratch" "$scratch" >"$scratch/colima"
+        chmod +x "$scratch/d/docker" "$scratch/colima"
+        DOCKER="$scratch/d/docker" COLIMA="$scratch/colima" GOH_CONTAINER_STATE="$scratch/state" \
+            expect "docker down: started" 1 bash "$SELF"
+        grep -q '^colima start$' "$calls" && grep -q '^colima stop$' "$calls" \
+            || { err "keymap build probe: a docker that was down was not started and stopped"; failed=1; }
         exit "$failed"
     ) || failed=1
     find "$scratch" -delete
     if [ "$failed" = 0 ]; then
-        ok "keymap build probe: no engine red, good green, cache reused, broken keymap red and named"
+        ok "keymap build probe: no engine red, good green, cache reused, broken keymap red and named, a down docker started and stopped"
     fi
     return "$failed"
 }
