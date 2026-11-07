@@ -30,7 +30,7 @@ import tempfile
 sys.path.insert(
     0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
 )
-from tui.lib import err, ok  # noqa: E402
+from tui.lib import err, ok
 
 IMAGE = "zmkfirmware/zmk-build-"
 MOVING = re.compile(

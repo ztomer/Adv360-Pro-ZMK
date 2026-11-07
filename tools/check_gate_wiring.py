@@ -36,7 +36,7 @@ import tempfile
 sys.path.insert(
     0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
 )
-from tui.lib import err, ok  # noqa: E402
+from tui.lib import err, ok
 
 SEQUENCER = "tools/repo_gates.sh"
 ENTRY = "tools/gate.sh"
@@ -48,7 +48,7 @@ GATE = re.compile(r"tools/(check_[A-Za-z0-9_]+\.(?:py|sh))")
 GUARDED = re.compile(r"\|\|\s*(failed\+=|warn\b)")
 # The step list the gate of record runs (GOH_CI_STEPS in .gatesrc), read the way the house reads
 # it: the value of one key, in one line.
-STEPS = re.compile(r"^GOH_CI_STEPS=(.+)$", re.M)
+STEPS = re.compile(r"^GOH_CI_STEPS=(.+)$", re.MULTILINE)
 
 
 def gates_in(root):

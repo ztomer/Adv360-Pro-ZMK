@@ -39,7 +39,7 @@ import sys
 sys.path.insert(
     0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
 )
-from tui.lib import err, info, ok  # noqa: E402
+from tui.lib import err, info, ok
 
 KEYMAP = "config/adv360.keymap"
 UPSTREAM = "upstream/V3.0"
@@ -68,7 +68,7 @@ KEYCODE_NAMES = {
 
 
 def strip_comments(text):
-    return re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", text, flags=re.S))
+    return re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL))
 
 
 def layers(text):

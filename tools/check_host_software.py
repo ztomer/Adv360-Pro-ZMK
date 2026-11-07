@@ -40,7 +40,7 @@ import sys
 sys.path.insert(
     0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
 )
-from tui.lib import err, ok  # noqa: E402
+from tui.lib import err, ok
 
 KEYMAP = "config/adv360.keymap"
 README = "README.md"
@@ -56,7 +56,7 @@ MODIFIER = "HYPER"  # the keymap's own name for the modifier stack the chords si
 
 
 def strip_comments(text):
-    return re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", text, flags=re.S))
+    return re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL))
 
 
 def defines(text):
@@ -84,7 +84,7 @@ def binding_tokens(text):
         rest = text[match.end() :]
         end = rest.find(";")
         statement = rest if end < 0 else rest[:end]
-        for block in re.findall(r"<([^>]*)>", statement, flags=re.S):
+        for block in re.findall(r"<([^>]*)>", statement, flags=re.DOTALL):
             tokens.extend(
                 token.strip(",") for token in block.split() if token.strip(",")
             )
@@ -100,7 +100,7 @@ def reachable_chords(tokens, macros, seen=None):
         if match:
             found.add(f"HYP({match.group(1)})")
             continue
-        name = token[1:] if token.startswith("&") else token
+        name = token.removeprefix("&")
         if name in macros and name not in seen:
             seen.add(name)
             found |= reachable_chords(macros[name].split(), macros, seen)
@@ -460,7 +460,7 @@ def probe():
     for name, (keymap_text, readme_text, want_red) in cases.items():
         try:
             red = bool(problems(keymap_text, readme_text))
-        except Exception as exc:  # a crash is a red gate, not a green one
+        except Exception as exc:  # noqa: BLE001 -- any crash is a red gate, not a green one
             err(f"host software probe: {name}: {exc}")
             red = True
         if red != want_red:

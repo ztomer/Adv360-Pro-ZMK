@@ -23,6 +23,7 @@ here is what says where it went.
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -30,7 +31,7 @@ import tempfile
 sys.path.insert(
     0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
 )
-from tui.lib import err, ok  # noqa: E402
+from tui.lib import err, ok
 
 TOOLS = "tools"
 TIMEOUT = 120
@@ -124,10 +125,14 @@ MUTATIONS = {
         Mutation(
             "a proof that stopped biting is not reported",
             (
-                "            if not bit:\n"
-                '                found.append(f"{name}: {mutation.label}: {why}")',
-                "            if False:\n"
-                '                found.append(f"{name}: {mutation.label}: {why}")',
+                (
+                    "            if not bit:\n"
+                    '                found.append(f"{name}: {mutation.label}: {why}")'
+                ),
+                (
+                    "            if False:\n"
+                    '                found.append(f"{name}: {mutation.label}: {why}")'
+                ),
             ),
         )
     ],
@@ -135,11 +140,13 @@ MUTATIONS = {
         Mutation(
             "no container engine is a skip, not a red",
             (
-                '        err "keymap build: no container engine (podman or docker) on PATH'
-                '${DOCKER:+ (DOCKER=$DOCKER)}"\n'
-                '        err "  install one (brew install docker colima), or set DOCKER; '
-                'this gate never skips"\n'
-                "        return 1",
+                (
+                    '        err "keymap build: no container engine (podman or docker) on PATH'
+                    '${DOCKER:+ (DOCKER=$DOCKER)}"\n'
+                    '        err "  install one (brew install docker colima), or set DOCKER; '
+                    'this gate never skips"\n'
+                    "        return 1"
+                ),
                 '        ok "keymap build: no container engine; skipping"\n        return 0',
             ),
         )
@@ -210,6 +217,12 @@ def _bites(root, name, mutation):
     if mutated is None:
         return False, why
     with tempfile.TemporaryDirectory(prefix="probe-bite.") as scratch:
+        # A check may import a sibling helper (zmk_base_probe.py); the copy must find it beside
+        # itself, or the mutated copy fails to import and reads as a bite it never was.
+        tools = os.path.join(root, TOOLS)
+        for helper in os.listdir(tools):
+            if helper.endswith(".py") and not helper.startswith("check_"):
+                shutil.copy2(os.path.join(tools, helper), scratch)
         copy = os.path.join(scratch, name)
         with open(copy, "w", encoding="utf-8") as handle:
             handle.write(mutated)

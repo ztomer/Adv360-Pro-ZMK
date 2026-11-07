@@ -43,10 +43,13 @@ import re
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-sys.path.insert(0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")))
-from tui.lib import err, ok, warn  # noqa: E402
+sys.path.insert(
+    0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+)
+from tui.lib import err, ok, warn
+from zmk_base_probe import probe
 
 WEST = "config/west.yml"
 DOCKERFILE = "Dockerfile"
@@ -70,22 +73,33 @@ COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
 # --- the manifest -----------------------------------------------------------------------------
 def manifest_project(text, name):
     """(remote, revision) for one project in a west manifest."""
-    projects = re.search(r"^\s*projects:\s*$(.*?)(?=^\s*self:|\Z)", text, flags=re.M | re.S)
+    projects = re.search(
+        r"^\s*projects:\s*$(.*?)(?=^\s*self:|\Z)", text, flags=re.MULTILINE | re.DOTALL
+    )
     block = projects.group(1) if projects else ""
     entry = re.search(
-        rf"-\s*name:\s*{re.escape(name)}(?![-\w])(.*?)(?=\n\s*-\s*name:|\Z)", block, flags=re.S
+        rf"-\s*name:\s*{re.escape(name)}(?![-\w])(.*?)(?=\n\s*-\s*name:|\Z)",
+        block,
+        flags=re.DOTALL,
     )
     if not entry:
         return None, None
     fields = entry.group(1)
     remote = re.search(r"remote:\s*(\S+)", fields)
     revision = re.search(r"revision:\s*(\S+)", fields)
-    return (remote.group(1) if remote else None, revision.group(1) if revision else None)
+    return (
+        remote.group(1) if remote else None,
+        revision.group(1) if revision else None,
+    )
 
 
 def manifest_remotes(text):
     """{name: url-base} for the remotes in a west manifest."""
-    remotes = re.search(r"^\s*remotes:\s*$(.*?)(?=^\s*projects:|\Z)", text, flags=re.M | re.S)
+    remotes = re.search(
+        r"^\s*remotes:\s*$(.*?)(?=^\s*projects:|\Z)",
+        text,
+        flags=re.MULTILINE | re.DOTALL,
+    )
     block = remotes.group(1) if remotes else ""
     return dict(re.findall(r"-\s*name:\s*(\S+)\s*\n\s*url-base:\s*(\S+)", block))
 
@@ -102,7 +116,9 @@ def image_tags(root):
     workflows = os.path.join(root, WORKFLOWS)
     for name in sorted(os.listdir(workflows)) if os.path.isdir(workflows) else []:
         if name.endswith((".yml", ".yaml")):
-            sources.append((f"{WORKFLOWS}/{name}", re.compile(r"\s*image:\s*['\"]?([^'\"\s#]+)")))
+            sources.append(
+                (f"{WORKFLOWS}/{name}", re.compile(r"\s*image:\s*['\"]?([^'\"\s#]+)"))
+            )
     tags = {}
     for rel, pattern in sources:
         path = os.path.join(root, rel)
@@ -113,7 +129,9 @@ def image_tags(root):
                 match = pattern.match(line)
                 if match:
                     ref = match.group(1)
-                    tags.setdefault(ref.split("@", 1)[0].rsplit(":", 1)[-1], []).append(f"{rel}:{no}")
+                    tags.setdefault(ref.split("@", 1)[0].rsplit(":", 1)[-1], []).append(
+                        f"{rel}:{no}"
+                    )
     return tags
 
 
@@ -208,18 +226,27 @@ def zephyr_line(manifest, remotes, work, env):
     if COMMIT.match(revision):
         base = remotes.get(remote)
         if not base:
-            return None, f"the resolved manifest names the zephyr remote '{remote}', which it lacks"
+            return (
+                None,
+                f"the resolved manifest names the zephyr remote '{remote}', which it lacks",
+            )
         commit, error = fetch_commit(f"{base.rstrip('/')}/zephyr", revision, work, env)
         if error:
             return None, f"the zephyr pin could not be resolved ({error})"
         text = read_at(work, commit, ZEPHYR_VERSION, env)
         if text is None:
-            return None, f"the zephyr commit {commit[:7]} carries no {ZEPHYR_VERSION} file"
+            return (
+                None,
+                f"the zephyr commit {commit[:7]} carries no {ZEPHYR_VERSION} file",
+            )
         version = VERSION.match(text.strip())
         if version:
             return version.group("line"), ""
         return None, f"the zephyr commit {commit[:7]} names no Zephyr version"
-    return None, f"the resolved manifest names zephyr at '{revision}', which carries no Zephyr version"
+    return (
+        None,
+        f"the resolved manifest names zephyr at '{revision}', which carries no Zephyr version",
+    )
 
 
 # --- the findings -----------------------------------------------------------------------------
@@ -236,7 +263,9 @@ def resolve(root):
         return facts, [f"{WEST} pins no zmk revision"]
     if not url_base:
         who = f"the remote '{remote}'" if remote else "its remote"
-        return facts, [f"{WEST} pins the zmk project at {who}, and the manifest gives it no url"]
+        return facts, [
+            f"{WEST} pins the zmk project at {who}, and the manifest gives it no url"
+        ]
     url = f"{url_base.rstrip('/')}/{PROJECT}"
     facts = {"url": url, "revision": revision}
     env = foreign_env()
@@ -265,10 +294,16 @@ def resolve(root):
 
     tags = image_tags(root)
     if not tags:
-        return facts, [f"no FROM in {DOCKERFILE} and no image: in {WORKFLOWS} -- the scan lost its subject"]
+        return facts, [
+            f"no FROM in {DOCKERFILE} and no image: in {WORKFLOWS} -- the scan lost its subject"
+        ]
     if len(tags) > 1:
-        where = "; ".join(f"{tag} in {', '.join(where)}" for tag, where in sorted(tags.items()))
-        found.append(f"the build image is pinned {len(tags)} ways ({where}); there must be one pin")
+        where = "; ".join(
+            f"{tag} in {', '.join(where)}" for tag, where in sorted(tags.items())
+        )
+        found.append(
+            f"the build image is pinned {len(tags)} ways ({where}); there must be one pin"
+        )
     for tag, where in sorted(tags.items()):
         parsed = TAG.match(tag)
         if not parsed:
@@ -308,8 +343,11 @@ def local_base(root):
         return None, None
     stamps = os.path.join(common[1].strip(), "keymap-build-stamps")
     names = os.listdir(stamps) if os.path.isdir(stamps) else []
-    entries = [os.path.join(stamps, n) for n in names
-               if not n.endswith(".log") and not n.startswith("stage.")]
+    entries = [
+        os.path.join(stamps, n)
+        for n in names
+        if not n.endswith(".log") and not n.startswith("stage.")
+    ]
     if not entries:
         return None, None
     newest = max(entries, key=os.path.getmtime)
@@ -347,7 +385,9 @@ def report(root, facts):
     for tag in image_tags(root):
         parsed = TAG.match(tag)
         if parsed:
-            stamp = datetime.strptime(parsed.group("stamp"), "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+            stamp = datetime.strptime(parsed.group("stamp"), "%Y%m%d%H%M%S").replace(
+                tzinfo=UTC
+            )
             break
     if stamp and dated and dated > stamp:
         warn(
@@ -357,9 +397,13 @@ def report(root, facts):
         )
     built, baked = local_base(root)
     if not baked:
-        warn("zmk base: the local build's base is not recorded (no keymap build stamp found)")
+        warn(
+            "zmk base: the local build's base is not recorded (no keymap build stamp found)"
+        )
     elif baked == commit:
-        ok(f"zmk base: the local build's base is {baked[:7]} too -- the same base CI builds")
+        ok(
+            f"zmk base: the local build's base is {baked[:7]} too -- the same base CI builds"
+        )
     else:
         warn(
             f"zmk base: the local build's base is {baked[:7]} (built {built}), the pin resolves to "
@@ -374,124 +418,26 @@ def run(root):
     if found:
         return 1
     report(root, facts)
-    ok(f"zmk base: the pinned base is Zephyr {facts['line']} and the build image builds that line")
-    return 0
-
-
-# --- the fixtures -----------------------------------------------------------------------------
-GOOD_TAG = "3.5-branch-20250930025731-3.5.0-0.16.3-f93290b3ab1a-18117245422"
-OTHER_TAG = "4.1-branch-20251204031905-4.1.0-0.16.9-29d0ea120dcc-19916495446"
-GOOD_DIGEST = "sha256:" + "a" * 64
-GOOD_REVISION = "adv360-z3.5-2"
-# The bases the fake remote carries, one per branch: the Zephyr line a manifest names.
-BASES = (
-    (GOOD_REVISION, "v3.5.0+zmk-fixes"),
-    ("d93499bb", "v3.5.0+zmk-fixes"),  # a branch whose NAME looks like a commit id
-    ("other", "v4.1.0"),
-    ("noline", "main"),  # a manifest that names no Zephyr version
-)
-
-
-def _write(path, text):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as handle:
-        handle.write(text)
-
-
-def _manifest(remote, url_base, project, revision, path, extra=""):
-    """A west manifest: one remote, one project pinned at `revision`."""
-    pinned = f"      revision: {revision}\n" if revision else ""
-    return (
-        f"manifest:\n  remotes:\n    - name: {remote}\n      url-base: {url_base}\n"
-        f"  projects:\n    - name: {project}\n      remote: {remote}\n{pinned}{extra}"
-        f"  self:\n    path: {path}\n"
+    ok(
+        f"zmk base: the pinned base is Zephyr {facts['line']} and the build image builds that line"
     )
-
-
-def fake_remote(root):
-    """A git repo standing in for the zmk remote: one branch per base.
-
-    Returns {branch: commit}. The commits are what the branches name, so a fixture can pin one
-    of them by its sha -- the pin a commit id is.
-    """
-    path = os.path.join(root, "remote", PROJECT)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    env = foreign_env()
-    _git(["init", "-q", "-b", "base", path], env=env)
-    for branch, zephyr in BASES:
-        _write(os.path.join(path, "app", "west.yml"),
-               _manifest("zmkfirmware", "https://github.com/zmkfirmware", "zephyr", zephyr, "app"))
-        _git(["add", "-A"], cwd=path, env=env)
-        _git(["-c", "user.name=gate", "-c", "user.email=gate@example.invalid",
-              "commit", "-q", "-m", branch], cwd=path, env=env)
-        _git(["branch", "-f", branch], cwd=path, env=env)
-    return {b: _git(["rev-parse", b], cwd=path, env=env)[1].strip() for b, _ in BASES}
-
-
-def _fixture(root, url_base, revision, dockerfile, workflow):
-    """Write the tree a fixture is: the manifest, the Dockerfile and the workflow."""
-    if revision is not None:
-        _write(os.path.join(root, WEST),
-               _manifest("refil", url_base, PROJECT, revision, "config", "      import: app/west.yml\n"))
-    _write(os.path.join(root, DOCKERFILE), dockerfile)
-    _write(os.path.join(root, ".github", "workflows", "build.yml"), workflow)
-
-
-def probe():
-    """Each defect in the docstring goes red alone; the clean fixture is green."""
-    ref = f"zmkfirmware/zmk-build-arm:{GOOD_TAG}@{GOOD_DIGEST}"
-    other = f"zmkfirmware/zmk-build-arm:{OTHER_TAG}@{GOOD_DIGEST}"
-    dockerfile, other_dockerfile = f"FROM {ref}\n", f"FROM {other}\n"
-    workflow = f"jobs:\n  build:\n    container:\n      image: {ref}\n"
-    other_workflow = f"jobs:\n  build:\n    container:\n      image: {other}\n"
-    odd_job = f"jobs:\n  build:\n    container:\n      image: zmkfirmware/zmk-build-arm:4.4-branch-x@{GOOD_DIGEST}\n"
-    failed = []
-    with tempfile.TemporaryDirectory(prefix="zmk-base-probe-") as scratch:
-        commits = fake_remote(scratch)
-        url_base = os.path.join(scratch, "remote")
-        cases = {
-            "clean": (GOOD_REVISION, dockerfile, workflow, False),
-            # The pin a commit id is: the gate accepts it and reads the line at that commit.
-            "a commit pin": (commits[GOOD_REVISION], dockerfile, workflow, False),
-            # A name that looks like a commit id is a BRANCH, because the remote says so.
-            "a branch whose name looks like a commit": ("d93499bb", dockerfile, workflow, False),
-            # The line comes from the manifest at the PINNED commit: this one names another line.
-            "a commit pin on another Zephyr line": (commits["other"], dockerfile, workflow, True),
-            "a commit the remote does not have": ("0" * 40, dockerfile, workflow, True),
-            "a revision that names nothing": ("no-such-pin", dockerfile, workflow, True),
-            "the resolved manifest names no Zephyr version": ("noline", dockerfile, workflow, True),
-            # ONE pin, on another Zephyr line than the base: the Dockerfile and the CI job agree,
-            # and the pair is still wrong. (The case below this one is a different defect: two pins.)
-            "the image is on another Zephyr line": (GOOD_REVISION, other_dockerfile, other_workflow, True),
-            "two pins": (GOOD_REVISION, other_dockerfile, workflow, True),
-            "the CI job pins another image": (GOOD_REVISION, dockerfile, odd_job, True),
-            "no west.yml": (None, dockerfile, workflow, True),
-            "no revision": ("", dockerfile, workflow, True),
-            "no image at all": (GOOD_REVISION, "", "", True),
-            "empty scope": (None, "", "", True),
-        }
-        for name, (revision, dockerfile_text, workflow_text, want_red) in cases.items():
-            with tempfile.TemporaryDirectory(prefix="zmk-base-case-") as root:
-                _fixture(root, url_base, revision, dockerfile_text, workflow_text)
-                red = bool(problems(root))
-            if red != want_red:
-                failed.append(
-                    f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}"
-                )
-    for line in failed:
-        err(f"zmk base probe: {line}")
-    if not failed:
-        ok(f"zmk base probe: {len(cases)} fixtures, each defect red and the clean fixture green")
-    return 1 if failed else 0
+    return 0
 
 
 def main(argv):
     if "--probe" in argv:
-        return probe()
-    root = argv[1] if len(argv) > 1 else subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], stdin=subprocess.DEVNULL,
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
+        return probe(sys.modules[__name__])
+    root = (
+        argv[1]
+        if len(argv) > 1
+        else subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    )
     return run(root)
 
 
