@@ -36,7 +36,9 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")))
+sys.path.insert(
+    0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+)
 from tui.lib import err, info, ok  # noqa: E402
 
 KEYMAP = "config/adv360.keymap"
@@ -52,9 +54,16 @@ SECTIONS = {
 # the four keys beside the inner columns, bound to &none or a layer key upstream.
 NAMES = {20: "(3) Macro", 21: "(1) Macro", 34: "(4) Macro", 39: "(2) Macro"}
 KEYCODE_NAMES = {
-    "TAB": "Tab", "ESC": "Esc", "GRAVE": "Grave (~)", "CAPS": "Caps-lock",
-    "LCTRL": "Left Ctrl", "LALT": "Left Alt", "LGUI": "Win-key", "RCTRL": "Right Ctrl",
-    "SEMI": ";", "SQT": "'",
+    "TAB": "Tab",
+    "ESC": "Esc",
+    "GRAVE": "Grave (~)",
+    "CAPS": "Caps-lock",
+    "LCTRL": "Left Ctrl",
+    "LALT": "Left Alt",
+    "LGUI": "Win-key",
+    "RCTRL": "Right Ctrl",
+    "SEMI": ";",
+    "SQT": "'",
 }
 
 
@@ -69,9 +78,13 @@ def layers(text):
     if not start:
         raise ValueError("no `keymap {` node")
     found = {}
-    for match in re.finditer(r"(\w+)\s*\{[^{}]*?bindings\s*=\s*<([^>]*)>\s*;", text[start.end():]):
+    for match in re.finditer(
+        r"(\w+)\s*\{[^{}]*?bindings\s*=\s*<([^>]*)>\s*;", text[start.end() :]
+    ):
         found[match.group(1)] = [
-            "&" + " ".join(part.split()) for part in match.group(2).split("&") if part.strip()
+            "&" + " ".join(part.split())
+            for part in match.group(2).split("&")
+            if part.strip()
         ]
     if not found:
         raise ValueError("`keymap {` holds no layer with bindings")
@@ -88,7 +101,9 @@ def remaps(base_text, head_text):
             out[name] = dict(enumerate(bindings))
             continue
         if len(bindings) != len(base[name]):
-            raise ValueError(f"layer {name}: {len(bindings)} bindings, upstream has {len(base[name])}")
+            raise ValueError(
+                f"layer {name}: {len(bindings)} bindings, upstream has {len(base[name])}"
+            )
 
         def fold(version, layer, pos, binding):
             if layer != base_layer and binding == version[base_layer][pos]:
@@ -143,11 +158,15 @@ def problems(base_text, head_text, readme):
     for layer, positions in changed.items():
         section = SECTIONS.get(layer)
         if section is None:
-            found.append(f"layer {layer} has remaps but no README section is mapped to it in SECTIONS")
+            found.append(
+                f"layer {layer} has remaps but no README section is mapped to it in SECTIONS"
+            )
             continue
         heading = next((h for h in tables if h.startswith(section)), None)
         if heading is None:
-            found.append(f"layer {layer}: {len(positions)} remap(s) but README has no '### {section}' table")
+            found.append(
+                f"layer {layer}: {len(positions)} remap(s) but README has no '### {section}' table"
+            )
             continue
         rows = tables[heading]
         by_name = {}
@@ -165,26 +184,40 @@ def problems(base_text, head_text, readme):
             named.add(name)
             cells = by_name.get(name, [])
             if not cells:
-                found.append(f"{heading}: no row for '{name}' (position {pos}, now `{binding}`)")
+                found.append(
+                    f"{heading}: no row for '{name}' (position {pos}, now `{binding}`)"
+                )
             elif len(cells) > 1:
-                found.append(f"{heading}: {len(cells)} rows for '{name}'; there must be one")
+                found.append(
+                    f"{heading}: {len(cells)} rows for '{name}'; there must be one"
+                )
             elif cells[0] is None:
                 found.append(f"{heading}: row '{name}' has no Binding column")
             elif " ".join(cells[0].split()) != binding:
-                found.append(f"{heading}: row '{name}' says `{cells[0]}`, the keymap has `{binding}`")
+                found.append(
+                    f"{heading}: row '{name}' says `{cells[0]}`, the keymap has `{binding}`"
+                )
         for original, _ in rows:
             if original not in named:
-                found.append(f"{heading}: row '{original}' names no remapped key on layer {layer}")
+                found.append(
+                    f"{heading}: row '{original}' names no remapped key on layer {layer}"
+                )
     for layer, section in SECTIONS.items():
         heading = next((h for h in tables if h.startswith(section)), None)
         if heading and layer not in changed:
-            found.append(f"{heading}: README documents remaps, but layer {layer} has none")
+            found.append(
+                f"{heading}: README documents remaps, but layer {layer} has none"
+            )
     return found
 
 
 def git(*args):
     return subprocess.run(
-        ["git", *args], stdin=subprocess.DEVNULL, capture_output=True, text=True, check=False
+        ["git", *args],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
     )
 
 
@@ -195,8 +228,12 @@ def sources():
     root = top.stdout.strip()
     base = git("merge-base", "HEAD", UPSTREAM)
     if base.returncode or not base.stdout.strip():
-        err(f"readme keymap: no merge-base with {UPSTREAM}; add the remote and fetch it:")
-        err("  git remote add upstream https://github.com/KinesisCorporation/Adv360-Pro-ZMK.git")
+        err(
+            f"readme keymap: no merge-base with {UPSTREAM}; add the remote and fetch it:"
+        )
+        err(
+            "  git remote add upstream https://github.com/KinesisCorporation/Adv360-Pro-ZMK.git"
+        )
         err("  git fetch upstream")
         raise SystemExit(1)
     sha = base.stdout.strip()
@@ -218,7 +255,9 @@ def run(argv):
             for layer, positions in changed.items():
                 info(f"{layer} (vs {sha[:7]})")
                 for pos, binding in sorted(positions.items()):
-                    print(f"  {pos:>2}  {key_name(pos, base_default) or '?':<10}  {binding}")
+                    print(
+                        f"  {pos:>2}  {key_name(pos, base_default) or '?':<10}  {binding}"
+                    )
             return 0
         found = problems(base_text, head_text, readme)
     except ValueError as exc:
@@ -230,7 +269,9 @@ def run(argv):
         err("readme keymap: list the remaps with: tools/check_readme_keymap.py --list")
         return 1
     count = sum(len(p) for p in remaps(base_text, head_text)[0].values())
-    ok(f"readme keymap: {count} remaps vs upstream {sha[:7]}, each with one true README row")
+    ok(
+        f"readme keymap: {count} remaps vs upstream {sha[:7]}, each with one true README row"
+    )
     return 0
 
 
@@ -245,8 +286,12 @@ _HEAD = "keymap { default_layer { bindings = <&kp TAB &kp B &kp C &kp D>; }; fn 
 def _readme(default_rows, fn_rows):
     head = "| Original | Binding | Mapped to |\n| --- | --- | --- |\n"
     return (
-        "## Layout\n### Default layer\n" + head + "".join(f"| {r} |\n" for r in default_rows)
-        + "### Function layer (fp)\n" + head + "".join(f"| {r} |\n" for r in fn_rows)
+        "## Layout\n### Default layer\n"
+        + head
+        + "".join(f"| {r} |\n" for r in default_rows)
+        + "### Function layer (fp)\n"
+        + head
+        + "".join(f"| {r} |\n" for r in fn_rows)
     )
 
 
@@ -256,12 +301,24 @@ def probe():
         "clean": (_HEAD, _readme(good_default, good_fn), False),
         "missing row": (_HEAD, _readme([], good_fn), True),
         "wrong binding": (_HEAD, _readme(["a | `&kp ESC` | Tab"], good_fn), True),
-        "row on the wrong key": (_HEAD, _readme(["b | `&kp TAB` | Tab"], good_fn), True),
+        "row on the wrong key": (
+            _HEAD,
+            _readme(["b | `&kp TAB` | Tab"], good_fn),
+            True,
+        ),
         "duplicate row": (_HEAD, _readme(good_default * 2, good_fn), True),
-        "row with no remap": (_HEAD, _readme(good_default + ["d | `&kp D` | D"], good_fn), True),
+        "row with no remap": (
+            _HEAD,
+            _readme(good_default + ["d | `&kp D` | D"], good_fn),
+            True,
+        ),
         "no binding column": (_HEAD, _readme(["a | Tab"], good_fn), True),
         "stale section": (_BASE, _readme(good_default, good_fn), True),
-        "broken keymap": (_HEAD.replace(">;", ";", 1), _readme(good_default, good_fn), True),
+        "broken keymap": (
+            _HEAD.replace(">;", ";", 1),
+            _readme(good_default, good_fn),
+            True,
+        ),
     }
     failed = []
     for name, (head, readme, want_red) in cases.items():
@@ -270,11 +327,15 @@ def probe():
         except ValueError:
             red = True
         if red != want_red:
-            failed.append(f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}")
+            failed.append(
+                f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}"
+            )
     for line in failed:
         err(f"readme keymap probe: {line}")
     if not failed:
-        ok(f"readme keymap probe: {len(cases)} fixtures, each defect red and the clean tree green")
+        ok(
+            f"readme keymap probe: {len(cases)} fixtures, each defect red and the clean tree green"
+        )
     return 1 if failed else 0
 
 

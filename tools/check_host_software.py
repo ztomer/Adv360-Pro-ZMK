@@ -37,7 +37,9 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")))
+sys.path.insert(
+    0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+)
 from tui.lib import err, ok  # noqa: E402
 
 KEYMAP = "config/adv360.keymap"
@@ -79,11 +81,13 @@ def binding_tokens(text):
     """
     tokens = []
     for match in re.finditer(r"bindings\s*=\s*", text):
-        rest = text[match.end():]
+        rest = text[match.end() :]
         end = rest.find(";")
         statement = rest if end < 0 else rest[:end]
         for block in re.findall(r"<([^>]*)>", statement, flags=re.S):
-            tokens.extend(token.strip(",") for token in block.split() if token.strip(","))
+            tokens.extend(
+                token.strip(",") for token in block.split() if token.strip(",")
+            )
     return tokens
 
 
@@ -111,9 +115,13 @@ def keymap_facts(text):
     hyp = re.search(r"#define\s+HYP\(\s*(\w+)\s*\)\s*([^\n]+)", text)
     hyper = re.search(rf"#define\s+{MODIFIER}\s+([^\n]+)", text)
     if hyp is None:
-        found.append("the keymap does not define HYP(key); the host chords cannot be read")
+        found.append(
+            "the keymap does not define HYP(key); the host chords cannot be read"
+        )
     if hyper is None:
-        found.append(f"the keymap does not define {MODIFIER}; the host chords cannot be read")
+        found.append(
+            f"the keymap does not define {MODIFIER}; the host chords cannot be read"
+        )
     if hyp is not None and hyper is not None:
         hyp_stack = modifier_stack(hyp.group(2), drop=(hyp.group(1),))
         hyper_stack = modifier_stack(hyper.group(1))
@@ -205,33 +213,49 @@ def problems(keymap_text, readme_text):
 
     host_table = host_rows(readme_text)
     if host_table is None:
-        found.append("README.md has no '## Host chords' table; the chords the board sends are not documented")
+        found.append(
+            "README.md has no '## Host chords' table; the chords the board sends are not documented"
+        )
         host_table = []
     listed = [cells[0].strip("`") for cells in host_table]
     for chord in sorted(set(listed) - chords):
-        found.append(f"README.md documents chord {chord}, but the keymap does not send it")
+        found.append(
+            f"README.md documents chord {chord}, but the keymap does not send it"
+        )
     for chord in sorted(chords - set(listed)):
-        found.append(f"the keymap sends {chord}, but README.md's 'Host chords' table does not list it")
+        found.append(
+            f"the keymap sends {chord}, but README.md's 'Host chords' table does not list it"
+        )
     for chord in sorted({chord for chord in listed if listed.count(chord) > 1}):
         found.append(f"README.md's 'Host chords' table lists {chord} more than once")
 
     names = {name for name, _ in recommended(readme_text)}
     for cells in host_table:
         if len(cells) < 4:
-            found.append(f"README.md's host-chord row {cells[0]} has fewer than four columns")
+            found.append(
+                f"README.md's host-chord row {cells[0]} has fewer than four columns"
+            )
             continue
         chord, software, host_chord, serves = (cell.strip() for cell in cells[:4])
         chord = chord.strip("`")
         recorded = HOST_SOFTWARE.get(chord)
         if recorded is None:
-            found.append(f"the keymap sends {chord}, which HOST_SOFTWARE does not record; record it here and in the README")
+            found.append(
+                f"the keymap sends {chord}, which HOST_SOFTWARE does not record; record it here and in the README"
+            )
             continue
         if software != recorded:
-            found.append(f"README.md says {chord} is served by {software}, but this fork records {recorded}")
+            found.append(
+                f"README.md says {chord} is served by {software}, but this fork records {recorded}"
+            )
         if software not in names:
-            found.append(f"{software} serves {chord} but is not in 'Recommended supporting software'")
+            found.append(
+                f"{software} serves {chord} but is not in 'Recommended supporting software'"
+            )
         if MODIFIER not in host_chord:
-            found.append(f"README.md's {chord} row spells the host chord as {host_chord!r}, without {MODIFIER}")
+            found.append(
+                f"README.md's {chord} row spells the host chord as {host_chord!r}, without {MODIFIER}"
+            )
         if not serves:
             found.append(f"README.md's {chord} row says what it serves not at all")
 
@@ -242,7 +266,9 @@ def problems(keymap_text, readme_text):
         if name in PLATFORM:
             continue
         if name not in layout_text and name not in host_text:
-            found.append(f"{name} is recommended but no row names it; it serves nothing here")
+            found.append(
+                f"{name} is recommended but no row names it; it serves nothing here"
+            )
 
     for chord in sorted(chords):
         recorded = HOST_SOFTWARE.get(chord)
@@ -255,7 +281,9 @@ def problems(keymap_text, readme_text):
             found.append(f"no Layout row spells {chord} the way the keymap spells it")
         for heading, cells in naming:
             if recorded and recorded not in " ".join(cells):
-                found.append(f"the {heading} row names {chord} but not the software that serves it ({recorded})")
+                found.append(
+                    f"the {heading} row names {chord} but not the software that serves it ({recorded})"
+                )
     return found
 
 
@@ -276,7 +304,9 @@ def run(root):
     if found:
         return 1
     chords, _ = keymap_facts(keymap_text)
-    ok(f"host software: {len(chords)} host chords, each named with the software that serves it")
+    ok(
+        f"host software: {len(chords)} host chords, each named with the software that serves it"
+    )
     return 0
 
 
@@ -344,7 +374,11 @@ def probe():
     cases = {
         "clean": (_KEYMAP, _README, False),
         "empty keymap": ("", _README, True),
-        "no host chords section": (_KEYMAP, mutate(_README, "## Host chords", "## Chords"), True),
+        "no host chords section": (
+            _KEYMAP,
+            mutate(_README, "## Host chords", "## Chords"),
+            True,
+        ),
         "chord missing from the table": (
             _KEYMAP,
             mutate(_README, "| `HYP(F2)` | ZoneWM | `HYPER` + `F2` | Claude |\n", ""),
@@ -372,8 +406,11 @@ def probe():
         ),
         "recommended software no row names": (
             _KEYMAP,
-            mutate(_README, "* ZoneWM -- my own zone and tile window manager\n",
-                   "* ZoneWM -- my own zone and tile window manager\n* Hammerspoon -- automation\n"),
+            mutate(
+                _README,
+                "* ZoneWM -- my own zone and tile window manager\n",
+                "* ZoneWM -- my own zone and tile window manager\n* Hammerspoon -- automation\n",
+            ),
             True,
         ),
         "host chord without the modifier": (
@@ -383,8 +420,11 @@ def probe():
         ),
         "row serves nothing": (
             _KEYMAP,
-            mutate(_README, "| `HYP(F2)` | ZoneWM | `HYPER` + `F2` | Claude |",
-                   "| `HYP(F2)` | ZoneWM | `HYPER` + `F2` |  |"),
+            mutate(
+                _README,
+                "| `HYP(F2)` | ZoneWM | `HYPER` + `F2` | Claude |",
+                "| `HYP(F2)` | ZoneWM | `HYPER` + `F2` |  |",
+            ),
             True,
         ),
         "layout row spells the chord differently": (
@@ -394,15 +434,27 @@ def probe():
         ),
         "layout row names the wrong software": (
             _KEYMAP,
-            mutate(_README, "window hints (`HYP(MINUS)`) -- ZoneWM", "window hints (`HYP(MINUS)`) -- Hammerspoon"),
+            mutate(
+                _README,
+                "window hints (`HYP(MINUS)`) -- ZoneWM",
+                "window hints (`HYP(MINUS)`) -- Hammerspoon",
+            ),
             True,
         ),
         "modifier stacks differ": (
-            mutate(_KEYMAP, "#define HYPER           LS(LC(LA(LGUI)))", "#define HYPER           LS(LC(Q))"),
+            mutate(
+                _KEYMAP,
+                "#define HYPER           LS(LC(LA(LGUI)))",
+                "#define HYPER           LS(LC(Q))",
+            ),
             _README,
             True,
         ),
-        "no HYP define": (mutate(_KEYMAP, "#define HYP(key)        LS(LC(LA(LG(key))))\n", ""), _README, True),
+        "no HYP define": (
+            mutate(_KEYMAP, "#define HYP(key)        LS(LC(LA(LG(key))))\n", ""),
+            _README,
+            True,
+        ),
     }
     failed = []
     for name, (keymap_text, readme_text, want_red) in cases.items():
@@ -412,21 +464,32 @@ def probe():
             err(f"host software probe: {name}: {exc}")
             red = True
         if red != want_red:
-            failed.append(f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}")
+            failed.append(
+                f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}"
+            )
     for line in failed:
         err(f"host software probe: {line}")
     if not failed:
-        ok(f"host software probe: {len(cases)} fixtures, each defect red and the clean fixture green")
+        ok(
+            f"host software probe: {len(cases)} fixtures, each defect red and the clean fixture green"
+        )
     return 1 if failed else 0
 
 
 def main(argv):
     if "--probe" in argv:
         return probe()
-    root = argv[1] if len(argv) > 1 else subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], stdin=subprocess.DEVNULL,
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
+    root = (
+        argv[1]
+        if len(argv) > 1
+        else subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    )
     return run(root)
 
 

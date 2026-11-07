@@ -27,7 +27,9 @@ import subprocess
 import sys
 import tempfile
 
-sys.path.insert(0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")))
+sys.path.insert(
+    0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+)
 from tui.lib import err, ok  # noqa: E402
 
 TOOLS = "tools"
@@ -47,8 +49,14 @@ class Mutation:
         for old, new in self.edits:
             if old not in text:
                 if new in text:
-                    return None, "the pre-fix behaviour is ALREADY planted -- the proof does not bite"
-                return None, "the mutation no longer applies -- the gate's source has moved"
+                    return (
+                        None,
+                        "the pre-fix behaviour is ALREADY planted -- the proof does not bite",
+                    )
+                return (
+                    None,
+                    "the mutation no longer applies -- the gate's source has moved",
+                )
             text = text.replace(old, new, 1)
         return text, ""
 
@@ -91,15 +99,19 @@ MUTATIONS = {
             # The pre-fix behaviour: a commit id is a revision that names no Zephyr line, so the
             # gate went red before it got to its own commit-pin branch (P1.3).
             "a commit pin is refused",
-            ('    if COMMIT.match(revision):\n        return "commit", ""',
-             '    if False:\n        return "commit", ""'),
+            (
+                '    if COMMIT.match(revision):\n        return "commit", ""',
+                '    if False:\n        return "commit", ""',
+            ),
         ),
         Mutation(
             # The pre-fix behaviour: the Zephyr line came from the revision's NAME, so the gate
             # approved a pin whose resolved manifest named another line.
             "the Zephyr line is not read from the resolved manifest",
-            ("line, error = zephyr_line(manifest, manifest_remotes(manifest), work, env)",
-             'line, error = "3.5", ""'),
+            (
+                "line, error = zephyr_line(manifest, manifest_remotes(manifest), work, env)",
+                'line, error = "3.5", ""',
+            ),
         ),
     ],
     "check_gate_wiring.py": [
@@ -160,14 +172,19 @@ def _child_env():
     for key in [k for k in env if k.startswith("GIT_")]:
         del env[key]
     env.setdefault(
-        "GOH_DIR", os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+        "GOH_DIR",
+        os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")),
     )
     return env
 
 
 def _run_probe(path, cwd):
     """(exit code, output) for the gate's own --probe."""
-    command = [sys.executable, path, "--probe"] if path.endswith(".py") else ["bash", path, "--probe"]
+    command = (
+        [sys.executable, path, "--probe"]
+        if path.endswith(".py")
+        else ["bash", path, "--probe"]
+    )
     try:
         result = subprocess.run(
             command,
@@ -202,7 +219,10 @@ def _bites(root, name, mutation):
     if code == 0:
         return False, "the probe stayed GREEN over the planted defect"
     if CRASH in output:
-        return False, f"the probe crashed instead of reporting the planted defect: {output[:200]}"
+        return (
+            False,
+            f"the probe crashed instead of reporting the planted defect: {output[:200]}",
+        )
     return True, ""
 
 
@@ -257,50 +277,71 @@ def probe():
     with tempfile.TemporaryDirectory(prefix="probe-bite-probe.") as scratch:
         tools = os.path.join(scratch, TOOLS)
         os.makedirs(tools)
-        with open(os.path.join(tools, "check_fake.py"), "w", encoding="utf-8") as handle:
+        with open(
+            os.path.join(tools, "check_fake.py"), "w", encoding="utf-8"
+        ) as handle:
             handle.write(FIXTURE_GATE)
         # 1. A mutation that removes the detection: the proof must stop biting, and be reported.
         bites = {
-            "check_fake.py": [Mutation("the fixture defect", ("sys.exit(1)", "sys.exit(0)"))]
+            "check_fake.py": [
+                Mutation("the fixture defect", ("sys.exit(1)", "sys.exit(0)"))
+            ]
         }
         found = problems(scratch, bites)
         if not found:
             failed.append("a proof that no longer bites was not reported")
         # 2. A mutation that keeps the detection: the proof still bites, and nothing is reported.
         keeps = {
-            "check_fake.py": [Mutation("the fixture defect", ("sys.exit(1)", "sys.exit(1) "))]
+            "check_fake.py": [
+                Mutation("the fixture defect", ("sys.exit(1)", "sys.exit(1) "))
+            ]
         }
         found = problems(scratch, keeps)
         if found:
             failed.append(f"a proof that still bites was reported: {found}")
         # 3. A mutation whose text is gone: reported, not skipped.
         gone = {
-            "check_fake.py": [Mutation("the fixture defect", ("no such text", "not-in-the-fixture"))]
+            "check_fake.py": [
+                Mutation("the fixture defect", ("no such text", "not-in-the-fixture"))
+            ]
         }
         found = problems(scratch, gone)
         if not found or "source has moved" not in found[0]:
             failed.append("a mutation that no longer applies was not reported")
         # 4. A mutation whose pre-fix behaviour is already there: reported as such.
         planted = {
-            "check_fake.py": [Mutation("the fixture defect", ("no such text", "sys.exit(1)"))]
+            "check_fake.py": [
+                Mutation("the fixture defect", ("no such text", "sys.exit(1)"))
+            ]
         }
         found = problems(scratch, planted)
         if not found or "ALREADY planted" not in found[0]:
-            failed.append("a pre-fix behaviour that is already planted was not reported")
+            failed.append(
+                "a pre-fix behaviour that is already planted was not reported"
+            )
     for line in failed:
         err(f"probe bite probe: {line}")
     if not failed:
-        ok("probe bite probe: a proof that stopped biting is red, and a proof that bites is green")
+        ok(
+            "probe bite probe: a proof that stopped biting is red, and a proof that bites is green"
+        )
     return 1 if failed else 0
 
 
 def main(argv):
     if "--probe" in argv:
         return probe()
-    root = argv[1] if len(argv) > 1 else subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], stdin=subprocess.DEVNULL,
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
+    root = (
+        argv[1]
+        if len(argv) > 1
+        else subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    )
     return run(root)
 
 

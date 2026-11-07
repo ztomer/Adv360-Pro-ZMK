@@ -33,7 +33,9 @@ import subprocess
 import sys
 import tempfile
 
-sys.path.insert(0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")))
+sys.path.insert(
+    0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+)
 from tui.lib import err, ok  # noqa: E402
 
 SEQUENCER = "tools/repo_gates.sh"
@@ -160,7 +162,9 @@ def run(root):
         err(f"gate wiring: {line}")
     if found:
         return 1
-    ok(f"gate wiring: {len(gates_in(root))} gate(s) wired into {SEQUENCER}, and CI runs the proofs")
+    ok(
+        f"gate wiring: {len(gates_in(root))} gate(s) wired into {SEQUENCER}, and CI runs the proofs"
+    )
     return 0
 
 
@@ -235,7 +239,9 @@ def _fixture(
         handle.write(sequencer)
     with open(os.path.join(tools, "gate.sh"), "w", encoding="utf-8") as handle:
         handle.write(
-            entry if entry is not None else "#!/usr/bin/env bash\n./tools/repo_gates.sh\n"
+            entry
+            if entry is not None
+            else "#!/usr/bin/env bash\n./tools/repo_gates.sh\n"
         )
     if gatesrc is not None:
         with open(os.path.join(root, GATESRC), "w", encoding="utf-8") as handle:
@@ -257,16 +263,24 @@ def _rule_cases():
     return [
         ("clean", {}, False),
         ("a gate nobody runs", {"extra": ["check_three.py"]}, True),
-        ("the sequencer runs a gate that is not there", {
-            "sequencer": FIXTURE_SEQUENCER.replace(
-                'tools/check_two.sh', 'tools/check_gone.sh'
-            )
-        }, True),
+        (
+            "the sequencer runs a gate that is not there",
+            {
+                "sequencer": FIXTURE_SEQUENCER.replace(
+                    "tools/check_two.sh", "tools/check_gone.sh"
+                )
+            },
+            True,
+        ),
         ("a gate whose failure is thrown away", {"sequencer": unguarded}, True),
-        ("the entry point does not run the sequencer", {
-            "entry": "#!/usr/bin/env bash\nexit 0\n",
-            "gatesrc": "GOH_CI_STEPS='./tools/run_proofs.sh'\n",
-        }, True),
+        (
+            "the entry point does not run the sequencer",
+            {
+                "entry": "#!/usr/bin/env bash\nexit 0\n",
+                "gatesrc": "GOH_CI_STEPS='./tools/run_proofs.sh'\n",
+            },
+            True,
+        ),
         ("CI runs no proofs", {"workflow": "on: [push]\njobs: {}\n"}, True),
     ]
 
@@ -378,10 +392,17 @@ def probe():
 def main(argv):
     if "--probe" in argv:
         return probe()
-    root = argv[1] if len(argv) > 1 else subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], stdin=subprocess.DEVNULL,
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
+    root = (
+        argv[1]
+        if len(argv) > 1
+        else subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    )
     return run(root)
 
 

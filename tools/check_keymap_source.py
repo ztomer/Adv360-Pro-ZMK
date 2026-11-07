@@ -22,7 +22,9 @@ import subprocess
 import sys
 import tempfile
 
-sys.path.insert(0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck")))
+sys.path.insert(
+    0, os.environ.get("GOH_DIR", os.path.expanduser("~/Projects/gates_of_heck"))
+)
 from tui.lib import err, ok  # noqa: E402
 
 SOURCE = "config/adv360.keymap"
@@ -34,7 +36,9 @@ def problems(root):
     if not os.path.isfile(os.path.join(root, SOURCE)):
         found.append(f"{SOURCE} is missing -- the scan lost its subject")
     if os.path.exists(os.path.join(root, SECOND)):
-        found.append(f"{SECOND} is back (an upstream merge?); delete it -- {SOURCE} is the one source")
+        found.append(
+            f"{SECOND} is back (an upstream merge?); delete it -- {SOURCE} is the one source"
+        )
     return found
 
 
@@ -63,21 +67,32 @@ def probe():
                     handle.write("x\n")
             red = bool(problems(root))
         if red != want_red:
-            failed.append(f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}")
+            failed.append(
+                f"{name}: expected {'red' if want_red else 'green'}, got {'red' if red else 'green'}"
+            )
     for line in failed:
         err(f"keymap source probe: {line}")
     if not failed:
-        ok(f"keymap source probe: {len(cases)} fixtures, each defect red and the clean tree green")
+        ok(
+            f"keymap source probe: {len(cases)} fixtures, each defect red and the clean tree green"
+        )
     return 1 if failed else 0
 
 
 def main(argv):
     if "--probe" in argv:
         return probe()
-    root = argv[1] if len(argv) > 1 else subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], stdin=subprocess.DEVNULL,
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
+    root = (
+        argv[1]
+        if len(argv) > 1
+        else subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    )
     return run(root)
 
 
