@@ -45,7 +45,7 @@ GOH_MOVING_TAGS_MIN_REFS=2            # read 3
 #
 # The harness path is exported because the steps below name it, and a step runs in a child shell.
 export GOH_DIR="${GOH_DIR:-$HOME/Projects/gates_of_heck}"
-GOH_CI_STEPS='./tools/run_proofs.sh:./tools/repo_gates.sh:bash "$GOH_DIR/gates/python.sh" "$GOH_DIR/checks/check_ci_local_parity.py"'
+GOH_CI_STEPS='./tools/run_proofs.sh:"$GOH_DIR/gates/py_staged.sh" --all .:./tools/repo_gates.sh:bash "$GOH_DIR/gates/python.sh" "$GOH_DIR/checks/check_ci_local_parity.py"'
 
 # The per-step ceiling of the gate of record (gates/local_ci.sh, GOH_LCI_TIMEOUT) is the house
 # default, 900 s. The keymap build step is the one that can reach it on a cold machine -- the
