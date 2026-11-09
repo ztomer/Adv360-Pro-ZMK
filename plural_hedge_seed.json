@@ -1,0 +1,40 @@
+{
+ "why": "goh plural-hedge (GOH.PLURALHEDGE): a hedged plural (`file(s)`) in a string literal -- this repository's findings on the day the check landed, keyed by its root commit. At or under its count warns; over it, unseeded, or an entry a full run finds clean is red. Fix the site through the tui lib's counted/noun helper and delete or lower its entry in the same commit: done is an empty list. A seed entry lives in its own repository's tree or goh's private store, never another repository's (GOH.SEEDPRIVATE).",
+ "entries": [
+  {
+   "root": "0a38e2de04e0cb8d21b4cc0a4de4e431dca256b7",
+   "repo": "Adv360-Pro-ZMK",
+   "path": "tools/check_gate_wiring.py",
+   "count": 1,
+   "reason": "unreviewed: 1 hedged plural: line 166"
+  },
+  {
+   "root": "0a38e2de04e0cb8d21b4cc0a4de4e431dca256b7",
+   "repo": "Adv360-Pro-ZMK",
+   "path": "tools/check_probe_bite.py",
+   "count": 1,
+   "reason": "unreviewed: 1 hedged plural: line 270"
+  },
+  {
+   "root": "0a38e2de04e0cb8d21b4cc0a4de4e431dca256b7",
+   "repo": "Adv360-Pro-ZMK",
+   "path": "tools/check_readme_keymap.py",
+   "count": 1,
+   "reason": "unreviewed: 1 hedged plural: line 168"
+  },
+  {
+   "root": "0a38e2de04e0cb8d21b4cc0a4de4e431dca256b7",
+   "repo": "Adv360-Pro-ZMK",
+   "path": "tools/check_upstream_drift.sh",
+   "count": 2,
+   "reason": "unreviewed: 2 hedged plurals: lines 41, 71"
+  },
+  {
+   "root": "0a38e2de04e0cb8d21b4cc0a4de4e431dca256b7",
+   "repo": "Adv360-Pro-ZMK",
+   "path": "tools/run_proofs.sh",
+   "count": 2,
+   "reason": "unreviewed: 2 hedged plurals: lines 58, 61"
+  }
+ ]
+}
