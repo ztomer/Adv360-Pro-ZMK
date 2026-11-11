@@ -1,0 +1,10 @@
+{
+  "tools/check_gate_wiring.py": 28,
+  "tools/check_host_software.py": 31,
+  "tools/check_image_pin.py": 14,
+  "tools/check_keymap_source.py": 10,
+  "tools/check_probe_bite.py": 30,
+  "tools/check_readme_keymap.py": 37,
+  "tools/check_zmk_base.py": 57,
+  "tools/zmk_base_probe.py": 14
+}
